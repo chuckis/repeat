@@ -1,5 +1,3 @@
-letters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
 input_chars = [] 
 
 for i in range(5):
