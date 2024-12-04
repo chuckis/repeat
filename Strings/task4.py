@@ -4,8 +4,8 @@ word_lst = []
 
 for i in range(5):
     i = input()
-    word_lst.append(i)
-    if i in letters:
+    if i and i in letters: # добавил проверку на пустой ввод (энтер)
+        word_lst.append(i)
         count_english_letters += 1
         
 
