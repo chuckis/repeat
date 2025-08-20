@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Календар навчальних днів 2025-2026</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9px;
+            margin: 0;
+            padding: 10px;
+            background: white;
+        }
+        
+        .header {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .month-container {
+            display: inline-block;
+            width: 48%;
+            margin: 1% 1% 15px 1%;
+            vertical-align: top;
+            page-break-inside: avoid;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        .month-title {
+            background: #3498db;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 5px;
+            position: relative;
+        }
+        
+        .day-count {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.3);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1px;
+            border: 2px solid #34495e;
+        }
+        
+        .day-header {
+            background: #ecf0f1;
+            padding: 4px 2px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 8px;
+            color: #2c3e50;
+            border-radius: 10px;
+        }
+        
+        .day-cell {
+            background: white;
+            border: 1px solid #bdc3c7;
+            padding: 8px 4px;
+            text-align: center;
+            min-height: 25px;
+            position: relative;
+            font-size: 10px;
+        }
+        
+        .day-cell:hover {
+            background: #f8f9fa;
+        }
+        /* kanikuly */
+        .weekend {
+            background: #fde15861;
+            color: #000000;
+        }
+        
+        .holiday {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .notes-section {
+            margin-top: 20px;
+            border-top: 2px solid #34495e;
+            padding-top: 10px;
+        }
+        
+        .notes-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        
+        .legend {
+            margin-top: 15px;
+            font-size: 8px;
+            color: #7f8c8d;
+        }
+        
+        @media print {
+            body { 
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        КАЛЕНДАР НАВЧАЛЬНИХ ДНІВ 2025-2026 НАВЧАЛЬНОГО РОКУ
+    </div>
+    
+    <!-- Вересень 2025 -->
+    <div class="month-container">
+        <div class="month-title">
+            ВЕРЕСЕНЬ 2025
+            <span class="day-count">22 дні</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell">1</div>
+            <div class="day-cell">2</div>
+            <div class="day-cell">3</div>
+            <div class="day-cell">4</div>
+            <div class="day-cell">5</div>
+            <div class="day-cell">8</div>
+            <div class="day-cell">9</div>
+            <div class="day-cell">10</div>
+            <div class="day-cell">11</div>
+            <div class="day-cell">12</div>
+            <div class="day-cell">15</div>
+            <div class="day-cell">16</div>
+            <div class="day-cell">17</div>
+            <div class="day-cell">18</div>
+            <div class="day-cell">19</div>
+            <div class="day-cell">22</div>
+            <div class="day-cell">23</div>
+            <div class="day-cell">24</div>
+            <div class="day-cell">25</div>
+            <div class="day-cell">26</div>
+            <div class="day-cell">29</div>
+            <div class="day-cell">30</div>
+        </div>
+    </div>
+    
+    <!-- Жовтень 2025 -->
+    <div class="month-container">
+        <div class="month-title">
+            ЖОВТЕНЬ 2025
+            <span class="day-count">18 днів</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell"></div>
+            <div class="day-cell"></div>
+            <div class="day-cell">1</div>
+            <div class="day-cell">2</div>
+            <div class="day-cell">3</div>
+            <div class="day-cell">6</div>
+            <div class="day-cell">7</div>
+            <div class="day-cell">8</div>
+            <div class="day-cell">9</div>
+            <div class="day-cell">10</div>
+            <div class="day-cell">13</div>
+            <div class="day-cell">14</div>
+            <div class="day-cell">15</div>
+            <div class="day-cell">16</div>
+            <div class="day-cell">17</div>
+            <div class="day-cell">20</div>
+            <div class="day-cell">21</div>
+            <div class="day-cell">22</div>
+            <div class="day-cell">23</div>
+            <div class="day-cell">24</div>
+            <div class="day-cell weekend">27</div>
+            <div class="day-cell weekend">28</div>
+            <div class="day-cell weekend">29</div>
+            <div class="day-cell weekend">30</div>
+            <div class="day-cell weekend">31</div>
+        </div>
+    </div>
+    
+    <!-- Листопад 2025 -->
+    <div class="month-container">
+        <div class="month-title">
+            ЛИСТОПАД 2025
+            <span class="day-count">20 днів</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell">3</div>
+            <div class="day-cell">4</div>
+            <div class="day-cell">5</div>
+            <div class="day-cell">6</div>
+            <div class="day-cell">7</div>
+            <div class="day-cell">10</div>
+            <div class="day-cell">11</div>
+            <div class="day-cell">12</div>
+            <div class="day-cell">13</div>
+            <div class="day-cell">14</div>
+            <div class="day-cell">17</div>
+            <div class="day-cell">18</div>
+            <div class="day-cell">19</div>
+            <div class="day-cell">20</div>
+            <div class="day-cell">21</div>
+            <div class="day-cell">24</div>
+            <div class="day-cell">25</div>
+            <div class="day-cell">26</div>
+            <div class="day-cell">27</div>
+            <div class="day-cell">28</div>
+        </div>
+    </div>
+    
+    <!-- Грудень 2025 -->
+    <div class="month-container">
+        <div class="month-title">
+            ГРУДЕНЬ 2025
+            <span class="day-count">20 днів</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell">1</div>
+            <div class="day-cell">2</div>
+            <div class="day-cell">3</div>
+            <div class="day-cell">4</div>
+            <div class="day-cell">5</div>
+            <div class="day-cell">8</div>
+            <div class="day-cell">9</div>
+            <div class="day-cell">10</div>
+            <div class="day-cell">11</div>
+            <div class="day-cell">12</div>
+            <div class="day-cell">15</div>
+            <div class="day-cell">16</div>
+            <div class="day-cell">17</div>
+            <div class="day-cell">18</div>
+            <div class="day-cell weekend">19</div>
+            <div class="day-cell">22</div>
+            <div class="day-cell">23</div>
+            <div class="day-cell">24</div>
+            <div class="day-cell">25</div>
+            <div class="day-cell">26</div>
+            <div class="day-cell weekend">29</div>
+            <div class="day-cell weekend">30</div>
+            <div class="day-cell weekend">31</div>
+        </div>
+    </div>
+    
+    <!-- Січень 2026 -->
+    <div class="month-container page-break">
+        <div class="month-title">
+            СІЧЕНЬ 2026
+            <span class="day-count">15 днів</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell"></div>
+            <div class="day-cell"></div>
+            <div class="day-cell"></div>
+            <div class="day-cell weekend">1</div>
+            <div class="day-cell weekend">2</div>
+            <div class="day-cell weekend">5</div>
+            <div class="day-cell weekend">6</div>
+            <div class="day-cell weekend">7</div>
+            <div class="day-cell weekend">8</div>
+            <div class="day-cell weekend">9</div>
+            <div class="day-cell">12</div>
+            <div class="day-cell">13</div>
+            <div class="day-cell">14</div>
+            <div class="day-cell">15</div>
+            <div class="day-cell">16</div>
+            <div class="day-cell weekend">19</div>
+            <div class="day-cell weekend">20</div>
+            <div class="day-cell">21</div>
+            <div class="day-cell">22</div>
+            <div class="day-cell">23</div>
+            <div class="day-cell">26</div>
+            <div class="day-cell">27</div>
+            <div class="day-cell">28</div>
+            <div class="day-cell">29</div>
+            <div class="day-cell">30</div>
+        </div>
+    </div>
+    
+    <!-- Лютий 2026 -->
+    <div class="month-container">
+        <div class="month-title">
+            ЛЮТИЙ 2026
+            <span class="day-count">15 днів</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell">2</div>
+            <div class="day-cell">3</div>
+            <div class="day-cell">4</div>
+            <div class="day-cell">5</div>
+            <div class="day-cell">6</div>
+            <div class="day-cell">9</div>
+            <div class="day-cell">10</div>
+            <div class="day-cell">11</div>
+            <div class="day-cell">12</div>
+            <div class="day-cell">13</div>
+            <div class="day-cell">16</div>
+            <div class="day-cell">17</div>
+            <div class="day-cell">18</div>
+            <div class="day-cell">19</div>
+            <div class="day-cell">20</div>
+            <div class="day-cell weekend">23</div>
+            <div class="day-cell weekend">24</div>
+            <div class="day-cell weekend">25</div>
+            <div class="day-cell weekend">26</div>
+            <div class="day-cell weekend">27</div>
+        </div>
+    </div>
+    
+    <!-- Березень 2026 -->
+    <div class="month-container">
+        <div class="month-title">
+            БЕРЕЗЕНЬ 2026
+            <span class="day-count">22 дні</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell">2</div>
+            <div class="day-cell">3</div>
+            <div class="day-cell">4</div>
+            <div class="day-cell">5</div>
+            <div class="day-cell">6</div>
+            <div class="day-cell">9</div>
+            <div class="day-cell">10</div>
+            <div class="day-cell">11</div>
+            <div class="day-cell">12</div>
+            <div class="day-cell">13</div>
+            <div class="day-cell">16</div>
+            <div class="day-cell">17</div>
+            <div class="day-cell">18</div>
+            <div class="day-cell">19</div>
+            <div class="day-cell">20</div>
+            <div class="day-cell">23</div>
+            <div class="day-cell">24</div>
+            <div class="day-cell">25</div>
+            <div class="day-cell">26</div>
+            <div class="day-cell">27</div>
+            <div class="day-cell">30</div>
+            <div class="day-cell">31</div>
+        </div>
+    </div>
+    
+    <!-- Квітень 2026 -->
+    <div class="month-container">
+        <div class="month-title">
+            КВІТЕНЬ 2026
+            <span class="day-count">20 днів</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell"></div>
+            <div class="day-cell"></div>
+            <div class="day-cell">1</div>
+            <div class="day-cell">2</div>
+            <div class="day-cell">3</div>
+            <div class="day-cell">6</div>
+            <div class="day-cell">7</div>
+            <div class="day-cell">8</div>
+            <div class="day-cell">9</div>
+            <div class="day-cell">10</div>
+            <div class="day-cell">13</div>
+            <div class="day-cell">14</div>
+            <div class="day-cell">15</div>
+            <div class="day-cell">16</div>
+            <div class="day-cell">17</div>
+            <div class="day-cell">20</div>
+            <div class="day-cell">21</div>
+            <div class="day-cell">22</div>
+            <div class="day-cell">23</div>
+            <div class="day-cell">24</div>
+            <div class="day-cell">27</div>
+            <div class="day-cell">28</div>
+            <div class="day-cell">29</div>
+            <div class="day-cell">30</div>
+        </div>
+    </div>
+    
+    <!-- Травень 2026 -->
+    <div class="month-container">
+        <div class="month-title">
+            ТРАВЕНЬ 2026
+            <span class="day-count">21 день</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell"></div>
+            <div class="day-cell"></div>
+            <div class="day-cell"></div>
+            <div class="day-cell"></div>
+            <div class="day-cell">1</div>
+            <div class="day-cell">4</div>
+            <div class="day-cell">5</div>
+            <div class="day-cell">6</div>
+            <div class="day-cell">7</div>
+            <div class="day-cell">8</div>
+            <div class="day-cell">11</div>
+            <div class="day-cell">12</div>
+            <div class="day-cell">13</div>
+            <div class="day-cell">14</div>
+            <div class="day-cell">15</div>
+            <div class="day-cell">18</div>
+            <div class="day-cell">19</div>
+            <div class="day-cell">20</div>
+            <div class="day-cell weekend">21</div>
+            <div class="day-cell">22</div>
+            <div class="day-cell">25</div>
+            <div class="day-cell">26</div>
+            <div class="day-cell">27</div>
+            <div class="day-cell">28</div>
+            <div class="day-cell">29</div>
+        </div>
+    </div>
+    
+    <!-- Червень 2026 -->
+    <div class="month-container">
+        <div class="month-title">
+            ЧЕРВЕНЬ 2026
+            <span class="day-count">2 дні</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-header">ПН</div>
+            <div class="day-header">ВТ</div>
+            <div class="day-header">СР</div>
+            <div class="day-header">ЧТ</div>
+            <div class="day-header">ПТ</div>
+            
+            <div class="day-cell">1</div>
+            <div class="day-cell">2</div>
+        </div>
+    </div>
+    
+    <div class="notes-section">
+        <div class="notes-title">НОТАТКИ:</div>
+        <div style="height: 80px; border: 1px solid #bdc3c7; background: #fafafa;"></div>
+        
+        <div class="legend">
+            <p><strong>Канікули:</strong> 1-7 січня 2026 (зимові), травневі свята: 1 і 9 травня</p>
+            <p><strong>Всього навчальних днів:</strong> 172</p>
+            <p><strong>Примітка:</strong> показано тільки робочі дні (понеділок-п'ятниця)</p>
+        </div>
+    </div>
+</body>
+</html>
