@@ -28,7 +28,7 @@
         
         .month-container {
             display: inline-block;
-            width: 48%;
+            min-width: 200px;
             margin: 1% 1% 15px 1%;
             vertical-align: top;
             page-break-inside: avoid;
@@ -47,6 +47,7 @@
             font-size: 12px;
             margin-bottom: 5px;
             position: relative;
+            border-radius: 10px;
         }
         
         .day-count {
@@ -63,8 +64,10 @@
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 1px;
+            padding: 4px;
+            gap: 2px;
             border: 2px solid #34495e;
+            border-radius: 5px;
         }
         
         .day-header {
@@ -74,17 +77,19 @@
             font-weight: bold;
             font-size: 8px;
             color: #2c3e50;
-            border-radius: 10px;
+            /* border-radius: 0px; */
         }
         
         .day-cell {
             background: white;
             border: 1px solid #bdc3c7;
-            padding: 8px 4px;
+            /* padding: 8px 4px; */
             text-align: center;
-            min-height: 25px;
+            min-height: 16px;
             position: relative;
             font-size: 10px;
+            font-weight: bold;
+            border-radius: 5px;
         }
         
         .day-cell:hover {
@@ -92,14 +97,19 @@
         }
         /* kanikuly */
         .weekend {
-            background: #fde15861;
-            color: #000000;
+            background: #27ee2a;
+            color: #fdfdfd;
+        }
+
+        .weekendjournal {
+            background: #e74c3c;
+            color: #fdfdfd;
         }
         
-        .holiday {
+        /* .holiday {
             background: #e74c3c;
             color: white;
-        }
+        } */
         
         .notes-section {
             margin-top: 20px;
@@ -135,7 +145,7 @@
     <!-- Вересень 2025 -->
     <div class="month-container">
         <div class="month-title">
-            ВЕРЕСЕНЬ 2025
+            ВЕРЕСЕНЬ
             <span class="day-count">22 дні</span>
         </div>
         <div class="calendar-grid">
@@ -173,7 +183,7 @@
     <!-- Жовтень 2025 -->
     <div class="month-container">
         <div class="month-title">
-            ЖОВТЕНЬ 2025
+            ЖОВТЕНЬ
             <span class="day-count">18 днів</span>
         </div>
         <div class="calendar-grid">
@@ -214,7 +224,7 @@
     <!-- Листопад 2025 -->
     <div class="month-container">
         <div class="month-title">
-            ЛИСТОПАД 2025
+            ЛИСТОПАД
             <span class="day-count">20 днів</span>
         </div>
         <div class="calendar-grid">
@@ -250,7 +260,7 @@
     <!-- Грудень 2025 -->
     <div class="month-container">
         <div class="month-title">
-            ГРУДЕНЬ 2025
+            ГРУДЕНЬ
             <span class="day-count">20 днів</span>
         </div>
         <div class="calendar-grid">
@@ -274,7 +284,7 @@
             <div class="day-cell">16</div>
             <div class="day-cell">17</div>
             <div class="day-cell">18</div>
-            <div class="day-cell weekend">19</div>
+            <div class="day-cell weekendjournal">19</div>
             <div class="day-cell">22</div>
             <div class="day-cell">23</div>
             <div class="day-cell">24</div>
@@ -289,7 +299,7 @@
     <!-- Січень 2026 -->
     <div class="month-container page-break">
         <div class="month-title">
-            СІЧЕНЬ 2026
+            СІЧЕНЬ
             <span class="day-count">15 днів</span>
         </div>
         <div class="calendar-grid">
@@ -314,8 +324,8 @@
             <div class="day-cell">14</div>
             <div class="day-cell">15</div>
             <div class="day-cell">16</div>
-            <div class="day-cell weekend">19</div>
-            <div class="day-cell weekend">20</div>
+            <div class="day-cell weekendjournal">19</div>
+            <div class="day-cell weekendjournal">20</div>
             <div class="day-cell">21</div>
             <div class="day-cell">22</div>
             <div class="day-cell">23</div>
@@ -330,7 +340,7 @@
     <!-- Лютий 2026 -->
     <div class="month-container">
         <div class="month-title">
-            ЛЮТИЙ 2026
+            ЛЮТИЙ
             <span class="day-count">15 днів</span>
         </div>
         <div class="calendar-grid">
@@ -366,7 +376,7 @@
     <!-- Березень 2026 -->
     <div class="month-container">
         <div class="month-title">
-            БЕРЕЗЕНЬ 2026
+            БЕРЕЗЕНЬ
             <span class="day-count">22 дні</span>
         </div>
         <div class="calendar-grid">
@@ -404,7 +414,7 @@
     <!-- Квітень 2026 -->
     <div class="month-container">
         <div class="month-title">
-            КВІТЕНЬ 2026
+            КВІТЕНЬ
             <span class="day-count">20 днів</span>
         </div>
         <div class="calendar-grid">
@@ -424,8 +434,8 @@
             <div class="day-cell">8</div>
             <div class="day-cell">9</div>
             <div class="day-cell">10</div>
-            <div class="day-cell">13</div>
-            <div class="day-cell">14</div>
+            <div class="day-cell weekendjournal">13</div>
+            <div class="day-cell weekendjournal">14</div>
             <div class="day-cell">15</div>
             <div class="day-cell">16</div>
             <div class="day-cell">17</div>
@@ -444,7 +454,7 @@
     <!-- Травень 2026 -->
     <div class="month-container">
         <div class="month-title">
-            ТРАВЕНЬ 2026
+            ТРАВЕНЬ
             <span class="day-count">21 день</span>
         </div>
         <div class="calendar-grid">
@@ -472,7 +482,7 @@
             <div class="day-cell">18</div>
             <div class="day-cell">19</div>
             <div class="day-cell">20</div>
-            <div class="day-cell weekend">21</div>
+            <div class="day-cell weekendjournal">21</div>
             <div class="day-cell">22</div>
             <div class="day-cell">25</div>
             <div class="day-cell">26</div>
@@ -485,7 +495,7 @@
     <!-- Червень 2026 -->
     <div class="month-container">
         <div class="month-title">
-            ЧЕРВЕНЬ 2026
+            ЧЕРВЕНЬ
             <span class="day-count">2 дні</span>
         </div>
         <div class="calendar-grid">
@@ -505,8 +515,8 @@
         <div style="height: 80px; border: 1px solid #bdc3c7; background: #fafafa;"></div>
         
         <div class="legend">
-            <p><strong>Канікули:</strong> 1-7 січня 2026 (зимові), травневі свята: 1 і 9 травня</p>
-            <p><strong>Всього навчальних днів:</strong> 172</p>
+            <!-- <p><strong>Канікули:</strong> 1-7 січня 2026 (зимові), травневі свята: 1 і 9 травня</p> -->
+            <p><strong>Всього навчальних днів:</strong> _____</p>
             <p><strong>Примітка:</strong> показано тільки робочі дні (понеділок-п'ятниця)</p>
         </div>
     </div>
