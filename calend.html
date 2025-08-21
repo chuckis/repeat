@@ -5,137 +5,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Календар навчальних днів 2025-2026</title>
     <style>
-        @page {
-            size: A4;
-            margin: 1cm;
-        }
-        
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 9px;
-            margin: 0;
-            padding: 10px;
-            background: white;
-        }
-        
-        .header {
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        
-        .month-container {
-            display: inline-block;
-            min-width: 200px;
-            margin: 1% 1% 15px 1%;
-            vertical-align: top;
-            page-break-inside: avoid;
-        }
-        
-        .page-break {
-            page-break-before: always;
-        }
-        
-        .month-title {
-            background: #3498db;
-            color: white;
-            padding: 8px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 5px;
-            position: relative;
-            border-radius: 10px;
-        }
-        
-        .day-count {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.3);
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 10px;
-        }
-        
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            padding: 4px;
-            gap: 2px;
-            border: 2px solid #34495e;
-            border-radius: 5px;
-        }
-        
-        .day-header {
-            background: #ecf0f1;
-            padding: 4px 2px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 8px;
-            color: #2c3e50;
-            /* border-radius: 0px; */
-        }
-        
-        .day-cell {
-            background: white;
-            border: 1px solid #bdc3c7;
-            /* padding: 8px 4px; */
-            text-align: center;
-            min-height: 16px;
-            position: relative;
-            font-size: 10px;
-            font-weight: bold;
-            border-radius: 5px;
-        }
-        
-        .day-cell:hover {
-            background: #f8f9fa;
-        }
-        /* kanikuly */
-        .weekend {
-            background: #27ee2a;
-            color: #fdfdfd;
-        }
+    @page {
+        size: A4;
+        margin: 1cm;
+    }
+    
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 9px;
+        margin: 0;
+        padding: 10px;
+        background: white;
+        color: #000;
+    }
+    
+    .header {
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+    }
+    
+    .month-container {
+        display: inline-block;
+        min-width: 200px;
+        margin: 1% 1% 15px 1%;
+        vertical-align: top;
+        page-break-inside: avoid;
+        border: 1px solid #000;
+        border-radius: 4px;
+        padding: 4px;
+    }
+    
+    .page-break {
+        page-break-before: always;
+    }
+    
+    .month-title {
+        background: #e0e0e0;
+        color: #000;
+        padding: 4px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 12px;
+        margin-bottom: 5px;
+        border-radius: 3px;
+        border: 1px solid #000;
+    }
+    
+    .day-count {
+        display: block;
+        font-size: 9px;
+        font-weight: normal;
+        color: #333;
+    }
+    
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        padding: 2px;
+        gap: 1px;
+        border: 1px solid #000;
+    }
+    
+    .day-header {
+        background: #f2f2f2;
+        padding: 2px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 8px;
+        border: 1px solid #aaa;
+    }
+    
+    .day-cell {
+        background: #fff;
+        border: 1px solid #aaa;
+        text-align: center;
+        min-height: 16px;
+        position: relative;
+        font-size: 10px;
+        font-weight: bold;
+    }
+    
+    .day-cell:hover {
+        background: #fafafa;
+    }
+    
+    /* выходные */
+    .weekend {
+        background: #f0f0f0;
+        border: 1px dashed #666;
+    }
 
-        .weekendjournal {
-            background: #e74c3c;
-            color: #fdfdfd;
+    /* особые дни (штриховка для ч/б печати) */
+    .weekendjournal {
+        background: repeating-linear-gradient(
+            45deg,
+            #a6a5a5,
+            #a6a5a5 3px,
+            #fff 3px,
+            #fff 6px
+        );
+        border: 1px solid #666;
+    }
+    
+    .notes-section {
+        margin-top: 20px;
+        border-top: 1px solid #000;
+        padding-top: 10px;
+    }
+    
+    .notes-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        font-size: 12px;
+    }
+    
+    .legend {
+        margin-top: 10px;
+        font-size: 8px;
+        color: #000;
+    }
+    
+    @media print {
+        body { 
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
-        
-        /* .holiday {
-            background: #e74c3c;
-            color: white;
-        } */
-        
-        .notes-section {
-            margin-top: 20px;
-            border-top: 2px solid #34495e;
-            padding-top: 10px;
-        }
-        
-        .notes-title {
-            font-weight: bold;
-            margin-bottom: 10px;
-            font-size: 12px;
-        }
-        
-        .legend {
-            margin-top: 15px;
-            font-size: 8px;
-            color: #7f8c8d;
-        }
-        
-        @media print {
-            body { 
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
-            }
-        }
-    </style>
+    }
+</style>
+
 </head>
 <body>
     <div class="header">
