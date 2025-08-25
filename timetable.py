@@ -322,19 +322,19 @@ for idx, (d, h) in enumerate(slots):
 # Только один слот выбран для совместного OPK
 model2.Add(sum(opk_slot_bools) == 1)
 
-# Если нужен конкретный день/урок, например, четверг, 3-й урок:
-for c in range(6, 10):
-    for r in rooms:
-        if r == opk_room:
-            model2.Add(Timetable[c, opk_subject, r, 'Th', 3] == 1)
-        else:
-            model2.Add(Timetable[c, opk_subject, r, 'Th', 3] == 0)
-    # Запретить OPK в другие слоты
-    for d in days:
-        for h in lessons:
-            if (d, h) != ('Th', 3):
-                for r in rooms:
-                    model2.Add(Timetable[c, opk_subject, r, d, h] == 0)
+# # Если нужен конкретный день/урок, например, четверг, 3-й урок:
+# for c in range(6, 10):
+#     for r in rooms:
+#         if r == opk_room:
+#             model2.Add(Timetable[c, opk_subject, r, 'Th', 3] == 1)
+#         else:
+#             model2.Add(Timetable[c, opk_subject, r, 'Th', 3] == 0)
+#     # Запретить OPK в другие слоты
+#     for d in days:
+#         for h in lessons:
+#             if (d, h) != ('Th', 3):
+#                 for r in rooms:
+#                     model2.Add(Timetable[c, opk_subject, r, d, h] == 0)
 
 # Each room ≤1 lesson per slot
 for r in rooms:
@@ -342,35 +342,59 @@ for r in rooms:
         for h in lessons:
             model2.Add(sum(Timetable[c,s,r,d,h] for c in classes for s in subjects) <= 1)
 
-# Teacher conflict: no double booking
+
+# Если предмет совместный (например, OPK), то допускается несколько классов одновременно.
+# Для остальных предметов — не более одного урока.
 for t in teachers:
     for d in days:
         for h in lessons:
-            model2.Add(sum(Timetable[c,s,r,d,h] for c in classes for s in subjects if teacher_of.get((c,s))==t for r in rooms) <= 1)
+            # Считаем количество обычных уроков
+            normal_lessons = []
+            for c in classes:
+                for s in subjects:
+                    if teacher_of.get((c,s)) == t:
+                        # Если это не совместный OPK
+                        if not (s == 'OPK' and 6 <= c <= 9):
+                            for r in rooms:
+                                normal_lessons.append(Timetable[c,s,r,d,h])
+            model2.Add(sum(normal_lessons) <= 1)
 
-# Room-specific constraints
-for r in rooms:
-    if r != 'R14':
-        for d in days:
-            for h in lessons:
-                model2.Add(sum(Timetable[c,'IT',r,d,h] for c in classes) == 0)
-    if r != 'R13':
-        for d in days:
-            for h in lessons:
-                model2.Add(sum(Timetable[c,'chem',r,d,h] for c in classes) == 0)
+# # Room-specific constraints
+# for r in rooms:
+#     if r != 'R14':
+#         for d in days:
+#             for h in lessons:
+#                 model2.Add(sum(Timetable[c,'IT',r,d,h] for c in classes) == 0)
+#     if r != 'R13':
+#         for d in days:
+#             for h in lessons:
+#                 model2.Add(sum(Timetable[c,'chem',r,d,h] for c in classes) == 0)
 
 # Objective: minimize later lessons
 penalties = []
+# for c in classes:
+#     for s in subjects:
+#         for r in rooms:
+#             for d in days:
+#                 for h in lessons:
+#                     penalties.append(h * Timetable[c,s,r,d,h])
+# model2.Minimize(sum(penalties))
+
 for c in classes:
     for s in subjects:
-        for r in rooms:
-            for d in days:
-                for h in lessons:
-                    penalties.append(h * Timetable[c,s,r,d,h])
+        hrs = Curriculum.get((c,s),0)
+        if hrs > 0:
+            actual = sum(Timetable[c,s,r,d,h] for r in rooms for d in days for h in lessons)
+            diff = model2.NewIntVar(-hrs, hrs, f"diff_{c}_{s}")
+            abs_diff = model2.NewIntVar(0, hrs, f"abs_diff_{c}_{s}")
+            model2.Add(diff == actual - hrs)
+            model2.AddAbsEquality(abs_diff, diff)
+            penalties.append(abs_diff)
+# ...
 model2.Minimize(sum(penalties))
 
 solver2 = cp_model.CpSolver()
-solver2.parameters.max_time_in_seconds = 30
+solver2.parameters.max_time_in_seconds = 180
 status = solver2.Solve(model2)
 
 # ------------------------
