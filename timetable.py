@@ -302,6 +302,29 @@ for c in classes:
             if s != event_subject or r != event_room:
                 model2.Add(Timetable[c, s, r, 'Mo', 1] == 0)
 
+# Ограничение: OPK для классов 1-5 только в любые 2 дня, кроме вторника
+for c in range(1, 6):
+    opk_day_bools = []
+    opk_slots = []
+    for d in days:
+        if d == 'Tu':
+            # Запрещаем OPK во вторник
+            for h in lessons:
+                for r in rooms:
+                    model2.Add(Timetable[c, 'OPK', r, d, h] == 0)
+        else:
+            # Булева переменная: есть ли OPK в этом дне
+            opk_day = model2.NewBoolVar(f"opk_day_{c}_{d}")
+            opk_day_bools.append(opk_day)
+            slot_sum = sum(Timetable[c, 'OPK', r, d, h] for r in rooms for h in lessons)
+            opk_slots.append(slot_sum)
+            # Если есть OPK в этом дне, то ровно один урок
+            # model2.Add(slot_sum == 1).OnlyEnforceIf(opk_day)
+            # Если нет OPK в этом дне, то 0 уроков
+            model2.Add(slot_sum == 0).OnlyEnforceIf(opk_day.Not())
+    # OPK может быть только в двух днях (кроме вторника)
+    model2.Add(sum(opk_day_bools) == 2)
+
 # Ограничение: у 6-9 классов OPK вместе и в одном кабинете (R12)
 opk_room = 'R12'
 opk_subject = 'OPK'
