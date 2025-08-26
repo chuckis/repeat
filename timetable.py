@@ -5,6 +5,8 @@ This script unifies Phase 1 (teacher assignment) and Phase 2 (timetable building
 """
 from ortools.sat.python import cp_model
 import matplotlib.pyplot as plt
+from openpyxl import Workbook
+from openpyxl.styles import Alignment, Font, Border, Side
 
 # ------------------------
 # DATA
@@ -302,7 +304,7 @@ for c in classes:
             if s != event_subject or r != event_room:
                 model2.Add(Timetable[c, s, r, 'Mo', 1] == 0)
 
-# Ограничение: у 6-9 классов OPK вместе и в одном кабинете
+# Ограничение: у 6-9 классов OPK вместе и в одном кабинете (R12)
 opk_room = 'R12'
 opk_subject = 'OPK'
 slots = [(d, h) for d in days for h in lessons]
@@ -356,64 +358,119 @@ status2 = solver2.Solve(model2)
 # ------------------------
 # VISUALIZATION
 # ------------------------
-import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 
-def show_timetable(Timetable, classes, subjects, rooms, days, lessons, solver, teacher_of, Lessons):
-    n = len(classes)
-    fig, axes = plt.subplots(n // 3 + 1, 3, figsize=(14, 2.5*n))
-    axes = axes.flatten()
+def show_timetable_table(Timetable, classes, subjects, rooms, days, lessons, solver):
+    fig, ax = plt.subplots(figsize=(len(classes)*1.5, len(days)*len(lessons)*0.4))
 
-    for idx, c in enumerate(classes):
-        ax = axes[idx]
-        ax.set_title(f"Class {c}")
+    # соответствие английских кодов дней к укр. сокращениям
+    day_labels = {
+        "Mo": "Пн",
+        "Tu": "Вт",
+        "We": "Ср",
+        "Th": "Чт",
+        "Fr": "Пт"
+    }
 
-        # Сетка: дни по оси Y, уроки по оси X
-        for di, d in enumerate(days):
-            for hi, h in enumerate(lessons):
-                entries = []
+    # всего строк = дни * уроки
+    n_rows = len(days) * len(lessons)
+    n_cols = len(classes) + 2  # +2: колонка "День", колонка "№ урока"
+
+    # пустая таблица
+    cell_text = [["" for _ in range(n_cols)] for _ in range(n_rows)]
+
+    # заголовки
+    col_labels = ["День", "№"] + [str(c) for c in classes]
+
+    # заполняем таблицу
+    row = 0
+    for d in days:
+        for hi, h in enumerate(lessons):
+            # День пишем только в первой строке блока
+            cell_text[row][0] = day_labels.get(d, d) if hi == 0 else ""
+            cell_text[row][1] = str(h)  # номер урока
+            for ci, c in enumerate(classes):
+                subj = None
                 for s in subjects:
                     for r in rooms:
                         if solver.Value(Timetable[c, s, r, d, h]):
-                            teacher = teacher_of.get((c, s), "?")
-                            entries.append((s, r, teacher))
+                            subj = s
+                cell_text[row][ci+2] = subj if subj else ""
+            row += 1
 
-                if entries:
-                    # Координаты клетки
-                    x0 = hi
-                    y0 = len(days) - di - 1
-                    # рисуем прямоугольник
-                    rect = patches.Rectangle((x0, y0), 1, 1,
-                                             linewidth=0.5, edgecolor='black',
-                                             facecolor='lightgrey', alpha=0.7)
-                    ax.add_patch(rect)
+    # строим таблицу matplotlib
+    the_table = ax.table(cellText=cell_text, colLabels=col_labels, loc='center',
+                         cellLoc='center', edges='closed')
 
-                    # текст: если несколько, печатаем через \n
-                    txt = "\n".join([f"{s}/{r}/{t}" for (s, r, t) in entries])
-                    ax.text(x0+0.5, y0+0.5, txt, ha='center', va='center', fontsize=6)
+    the_table.auto_set_font_size(False)
+    the_table.set_fontsize(7)
+    the_table.scale(1.2, 1.2)
 
-        # Оси
-        ax.set_xticks(range(len(lessons)))
-        ax.set_xticklabels([f"L{h}" for h in lessons])
-        ax.set_yticks(range(len(days)))
-        ax.set_yticklabels(days[::-1])  # сверху понедельник
-        ax.set_xlim(0, len(lessons))
-        ax.set_ylim(0, len(days))
-        ax.grid(True, which='both', linestyle='--', linewidth=0.5)
-        ax.invert_yaxis()  # чтобы Mo был сверху
+    # жирные линии-разделители между днями
+    for di in range(1, len(days)):
+        row_index = di * len(lessons)
+        for col in range(n_cols):
+            the_table[(row_index, col)].visible_edges = "T"
+            the_table[(row_index, col)].set_linewidth(2.0)
 
+    ax.axis('off')
     plt.tight_layout()
     plt.show()
 
-    # ------------------------
-    # Teacher workload table
-    # ------------------------
-    print("\n=== Teacher Workload ===")
-    for t in teachers:
-        print(f"{t}: {solver.Value(Lessons[t])} hours")
+def export_timetable_to_excel(filename, Timetable, classes, subjects, rooms, days, lessons, solver):
+    # соответствие кодов дней к укр. сокращениям
+    day_labels = {
+        "Mo": "Пн",
+        "Tu": "Вт",
+        "We": "Ср",
+        "Th": "Чт",
+        "Fr": "Пт"
+    }
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Розклад"
+
+    # заголовки
+    headers = ["День", "№"] + [str(c) for c in classes]
+    ws.append(headers)
+
+    # заполняем таблицу
+    for d in days:
+        for hi, h in enumerate(lessons):
+            row = []
+            row.append(day_labels.get(d, d) if hi == 0 else "")
+            row.append(h)
+            for c in classes:
+                subj = None
+                for s in subjects:
+                    for r in rooms:
+                        if solver.Value(Timetable[c, s, r, d, h]):
+                            subj = s
+                row.append(subj if subj else "")
+            ws.append(row)
+
+    # Стилизация таблицы
+    thin = Side(border_style="thin", color="000000")
+    for row in ws.iter_rows():
+        for cell in row:
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+            cell.border = Border(top=thin, left=thin, right=thin, bottom=thin)
+    # Заголовки жирным
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+
+    wb.save(filename)
+    print(f"✅ Розклад збережено у файл {filename}")
 
 
 if status2 in (cp_model.OPTIMAL, cp_model.FEASIBLE):
     print("✅ Feasible timetable found")
-    show_timetable(Timetable, classes, subjects, rooms, days, lessons, solver2, teacher_of, Lessons)
+   # Визуализация как таблица в matplotlib
+    # show_timetable_table(Timetable, classes, subjects, rooms, days, lessons, solver2)
+
+# Экспорт в Excel
+    export_timetable_to_excel("timetable.xlsx", Timetable, classes, subjects, rooms, days, lessons, solver2)
+
 else:
     print("❌ No feasible timetable")
