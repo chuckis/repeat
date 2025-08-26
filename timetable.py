@@ -201,7 +201,7 @@ model1 = cp_model.CpModel()
 
 Teaches = {}
 for t in teachers:
-    for c in classes[4:]:
+    for c in classes:
         for s in subjects:
             Teaches[t,c,s] = model1.NewBoolVar(f"Teach[{t},{c},{s}]")
 
