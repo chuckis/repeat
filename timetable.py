@@ -11,25 +11,22 @@ import matplotlib.pyplot as plt
 # ------------------------
 teachers = ['T1','T2','T3','T4','T5','T6','T7', 'T8', 'T9', 'T10', 'T11',
             'T12','T13','T14', 'T15', 'T16', 'T17', 'T18', 'T19', 'T20', 'T21']
-subjects = ['math','ukrm','english','IT','biology',
+subjects = ['arithm', 'math', 'ukrmol', 'ukrm','english','IT','biology',
             'history','arts','music','crafts','sport',
-            'physics','geo','civics', 'chem', 'prirodozn', 'ippoter', 'navch',
+            'physics','geo','pravozn', 'chem', 'prirodozn', 'ippoter', 'navch',
             'CSL', 'OPK', 'JS', 'event']
 classes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 days = ['Mo', 'Tu', 'We', 'Th', 'Fr']
 rooms = ['R1', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10', 'R12', 'R13', 'R14']
 H = 7
-lessons = list(range(1,H+1))
-lunch_lessons = []
-lunch_limit = 3
+lessons = list(range(1, H+1))
 
 # classes hours of subj
-
 Curriculum = dict()
 
-Curriculum[(1, 'ukrm')] = 6
+Curriculum[(1, 'ukrmol')] = 6
 Curriculum[(1, 'english')] = 3
-Curriculum[(1, 'math')] = 6
+Curriculum[(1, 'arithm')] = 6
 Curriculum[(1, 'prirodozn')] = 3
 Curriculum[(1, 'arts')] = 1
 Curriculum[(1, 'music')] = 1
@@ -41,10 +38,9 @@ Curriculum[(1, 'ippoter')] = 1
 Curriculum[(1, 'navch')] = 4
 Curriculum[(1, 'CSL')] = 1
 
-Curriculum[(2, 'ukrm')] = 7
+Curriculum[(2, 'ukrmol')] = 7
 Curriculum[(2, 'english')] = 3
-Curriculum[(2, 'math')] = 6
-Curriculum[(2, 'science')] = 2
+Curriculum[(2, 'arithm')] = 6
 Curriculum[(2, 'arts')] = 1
 Curriculum[(2, 'music')] = 1
 Curriculum[(2, 'crafts')] = 1
@@ -56,10 +52,10 @@ Curriculum[(2, 'ippoter')] = 1
 Curriculum[(2, 'CSL')] = 1
 Curriculum[(2, 'OPK')] = 1
 
-Curriculum[(3, 'ukrm')] = 7
+Curriculum[(3, 'ukrmol')] = 7
 Curriculum[(3, 'english')] = 3
-Curriculum[(3, 'math')] = 6
-Curriculum[(3, 'science')] = 3
+Curriculum[(3, 'arithm')] = 6
+Curriculum[(3, 'prirodozn')] = 3
 Curriculum[(3, 'arts')] = 2
 Curriculum[(3, 'music')] = 1
 Curriculum[(3, 'crafts')] = 1
@@ -69,12 +65,11 @@ Curriculum[(3, 'ippoter')] = 1
 Curriculum[(3, 'CSL')] = 1
 Curriculum[(3, 'OPK')] = 1
 
-Curriculum[(4, 'ukrm')] = 7
+Curriculum[(4, 'ukrmol')] = 7
 Curriculum[(4, 'english')] = 3
-Curriculum[(4, 'math')] = 6
-Curriculum[(4, 'biology')] = 2
-Curriculum[(4, 'history')] = 2
+Curriculum[(4, 'arithm')] = 6
 Curriculum[(4, 'arts')] = 1
+Curriculum[(4, 'prirodozn')] = 3
 Curriculum[(4, 'music')] = 1
 Curriculum[(4, 'crafts')] = 1
 Curriculum[(4, 'sport')] = 2
@@ -87,8 +82,7 @@ Curriculum[(5, 'ukrm')] = 6
 Curriculum[(5, 'english')] = 3
 Curriculum[(5, 'math')] = 6
 Curriculum[(5, 'IT')] = 1
-Curriculum[(5, 'biology')] = 2
-Curriculum[(5, 'history')] = 2
+Curriculum[(5, 'prirodozn')] = 2
 Curriculum[(5, 'arts')] = 1
 Curriculum[(5, 'music')] = 1
 Curriculum[(5, 'crafts')] = 1
@@ -102,14 +96,12 @@ Curriculum[(6, 'english')] = 3
 Curriculum[(6, 'math')] = 4
 Curriculum[(6, 'IT')] = 1
 Curriculum[(6, 'biology')] = 2
-Curriculum[(6, 'physics')] = 2
 Curriculum[(6, 'history')] = 2
 Curriculum[(6, 'geo')] = 2
 Curriculum[(6, 'arts')] = 2
 Curriculum[(6, 'music')] = 1
 Curriculum[(6, 'crafts')] = 1
 Curriculum[(6, 'sport')] = 2
-Curriculum[(6, 'health')] = 1
 Curriculum[(6, 'ippoter')] = 1
 Curriculum[(6, 'JS')] = 1
 Curriculum[(6, 'OPK')] = 1
@@ -141,7 +133,6 @@ Curriculum[(8, 'chem')] = 2
 Curriculum[(8, 'geo')] = 2
 Curriculum[(8, 'arts')] = 2
 Curriculum[(8, 'sport')] = 2
-Curriculum[(8, 'health')] = 1
 Curriculum[(8, 'IT')] = 2
 Curriculum[(8, 'ippoter')] = 1
 Curriculum[(8, 'JS')] = 1
@@ -151,7 +142,7 @@ Curriculum[(9, 'ukrm')] = 4
 Curriculum[(9, 'english')] = 3
 Curriculum[(9, 'math')] = 6
 Curriculum[(9, 'biology')] = 2
-Curriculum[(9, 'civics')] = 1
+Curriculum[(9, 'pravozn')] = 1
 Curriculum[(9, 'physics')] = 2
 Curriculum[(9, 'history')] = 2
 Curriculum[(9, 'chem')] = 2
@@ -166,9 +157,18 @@ Curriculum[(9, 'OPK')] = 1
 # Approbation (кто какие предметы может вести)
 Approbation = {
     ('T1','navch'):1,
+    ('T1','ukrmol'):1,
+    ('T1','arithm'):1,
     ('T2', 'navch'):1,
-    ('T3', 'civics'):1,
+    ('T2','ukrmol'):1,
+    ('T2','arithm'):1,
+    ('T3', 'ukrm'):1,
+    ('T3','ukrmol'):1,
+    ('T3','arithm'):1,
+    ('T3', 'pravozn'):1,
     ('T4', 'music'):1,
+    ('T4','arithm'):1,
+    ('T4','ukrmol'):1,
     ('T5', 'CSL'):1,
     ('T6', 'math'):1,
     ('T7', 'arts'):1,
@@ -190,15 +190,9 @@ Approbation = {
     ('T18', 'JS'):1,
     ('T19', 'physics'):1,
     ('T20', 'ukrm'):1,
-    ('T21', 'ippoter'):1,
+    ('T21', 'ippoter'):1
 }
 
-# teachers = ['T1','T2','T3','T4','T5','T6','T7', 'T8', 'T9', 'T10', 'T11',
-#             'T12','T13','T14', 'T15', 'T16', 'T17', 'T18', 'T19', 'T20']
-# subjects = ['math','ukrm','english','IT','biology',
-#             'history','arts','music','crafts','sport',
-#             'physics','geo','civics', 'chem', 'prirodozn', 'ippoter', 'navch',
-#             'CSL', 'PNG', 'OPK', 'JS']
 
 # ------------------------
 # PHASE 1: Teacher assignment
@@ -207,27 +201,31 @@ model1 = cp_model.CpModel()
 
 Teaches = {}
 for t in teachers:
-    for c in classes:
+    for c in classes[4:]:
         for s in subjects:
             Teaches[t,c,s] = model1.NewBoolVar(f"Teach[{t},{c},{s}]")
 
+print(Teaches)
+
 Lessons = {t:model1.NewIntVar(0,30,f"Lessons[{t}]") for t in teachers}
+# print(Lessons)
 
 # First 4 teachers are fixed to first 4 classes (except english)
-pairings = list(zip(teachers[:4], classes[:4]))
-for t,c in pairings:
-    for s in subjects:
-        if s != 'english' and Curriculum.get((c,s),0) > 0:
-            model1.Add(Teaches[t,c,s] == 1)
-    for c2 in classes:
-        if c2 != c:
-            for s in subjects:
-                model1.Add(Teaches[t,c2,s] == 0)
-    hours = sum(Curriculum.get((c,s),0) for s in subjects if s != 'english')
-    model1.Add(Lessons[t] == hours)
+#  TODO: у нас еще есть музыка и укрм. and explain
+# pairings = list(zip(teachers[:4], classes[:4]))
+# for t,c in pairings:
+#     for s in subjects:
+#         if s != 'english' and Curriculum.get((c,s),0) > 0:
+#             model1.Add(Teaches[t,c,s] == 1)
+#     for c2 in classes:
+#         if c2 != c:
+#             for s in subjects:
+#                 model1.Add(Teaches[t,c2,s] == 0)
+#     hours = sum(Curriculum.get((c,s),0) for s in subjects if s != 'english')
+#     model1.Add(Lessons[t] == hours)
 
-# Other teachers by approbation
-for t in teachers[4:]:
+# Other or maybe ALL(?) teachers by approbation
+for t in teachers:
     total = []
     for c in classes:
         for s in subjects:
@@ -241,6 +239,7 @@ for t in teachers[4:]:
     model1.Add(Lessons[t] <= 25)
     # model1.Add(Lessons[t] >= 14)
 
+# TODO: explain
 for c in classes:
     for s in subjects:
         if Curriculum.get((c,s),0) > 0:
@@ -257,6 +256,8 @@ for c in classes:
         for t in teachers:
             if solver1.Value(Teaches[t,c,s]):
                 teacher_of[(c,s)] = t
+
+print(teacher_of)
 
 # ------------------------
 # PHASE 2: Timetable
@@ -279,10 +280,10 @@ for c in classes:
             model2.Add(sum(Timetable[c,s,r,d,h] for r in rooms for d in days for h in lessons) == hrs)
 
 # Each class ≤1 lesson per slot
-for c in classes:
-    for d in days:
-        for h in lessons:
-            model2.Add(sum(Timetable[c,s,r,d,h] for s in subjects for r in rooms) <= 1)
+# for c in classes:
+#     for d in days:
+#         for h in lessons:
+#             model2.Add(sum(Timetable[c,s,r,d,h] for s in subjects for r in rooms) <= 1)
 
 # Ограничение: в понедельник на первом уроке все классы имеют мероприятие в одном кабинете
 event_subject = 'event'
@@ -337,10 +338,10 @@ model2.Add(sum(opk_slot_bools) == 1)
 #                     model2.Add(Timetable[c, opk_subject, r, d, h] == 0)
 
 # Each room ≤1 lesson per slot
-for r in rooms:
-    for d in days:
-        for h in lessons:
-            model2.Add(sum(Timetable[c,s,r,d,h] for c in classes for s in subjects) <= 1)
+# for r in rooms:
+#     for d in days:
+#         for h in lessons:
+#             model2.Add(sum(Timetable[c,s,r,d,h] for c in classes for s in subjects) <= 1)
 
 
 # Если предмет совместный (например, OPK), то допускается несколько классов одновременно.
