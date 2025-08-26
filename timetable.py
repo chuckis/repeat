@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # DATA
 # ------------------------
 teachers = ['T1','T2','T3','T4','T5','T6','T7', 'T8', 'T9', 'T10', 'T11',
-            'T12','T13','T14', 'T15', 'T16', 'T17', 'T18', 'T19', 'T20', 'T21']
+            'T12','T13','T14', 'T15', 'T16', 'T17', 'T18', 'T19', 'T20', 'T21', 'T22']
 subjects = ['arithm', 'math', 'ukrmol', 'ukrm','english','IT','biology',
             'history','arts','music','crafts','sport',
             'physics','geo','pravozn', 'chem', 'prirodozn', 'ippoter', 'navch',
@@ -52,7 +52,7 @@ Curriculum[(2, 'ippoter')] = 1
 Curriculum[(2, 'CSL')] = 1
 Curriculum[(2, 'OPK')] = 1
 
-Curriculum[(3, 'ukrmol')] = 7
+Curriculum[(3, 'ukrmol')] = 6
 Curriculum[(3, 'english')] = 3
 Curriculum[(3, 'arithm')] = 6
 Curriculum[(3, 'prirodozn')] = 3
@@ -157,18 +157,22 @@ Curriculum[(9, 'OPK')] = 1
 # Approbation (кто какие предметы может вести)
 Approbation = {
     ('T1','navch'):1,
+    ('T1','prirodozn'):1,
     ('T1','ukrmol'):1,
     ('T1','arithm'):1,
     ('T2', 'navch'):1,
+    ('T2','prirodozn'):1,
     ('T2','ukrmol'):1,
     ('T2','arithm'):1,
     ('T3', 'ukrm'):1,
     ('T3','ukrmol'):1,
     ('T3','arithm'):1,
+    ('T3','prirodozn'):1,
     ('T3', 'pravozn'):1,
     ('T4', 'music'):1,
     ('T4','arithm'):1,
     ('T4','ukrmol'):1,
+    ('T4','prirodozn'):1,
     ('T5', 'CSL'):1,
     ('T6', 'math'):1,
     ('T7', 'arts'):1,
@@ -190,12 +194,13 @@ Approbation = {
     ('T18', 'JS'):1,
     ('T19', 'physics'):1,
     ('T20', 'ukrm'):1,
-    ('T21', 'ippoter'):1
+    ('T21', 'ippoter'):1,
+    ('T22', 'geo'):1,
 }
 
 
 # ------------------------
-# PHASE 1: Teacher assignment
+# PHASE 1: Teacher assignment (Approbation-driven)
 # ------------------------
 model1 = cp_model.CpModel()
 
@@ -203,61 +208,67 @@ Teaches = {}
 for t in teachers:
     for c in classes:
         for s in subjects:
-            Teaches[t,c,s] = model1.NewBoolVar(f"Teach[{t},{c},{s}]")
+            Teaches[t, c, s] = model1.NewBoolVar(f"Teach[{t},{c},{s}]")
 
-print(Teaches)
+Lessons = {t: model1.NewIntVar(0, 40, f"Lessons[{t}]") for t in teachers}
 
-Lessons = {t:model1.NewIntVar(0,30,f"Lessons[{t}]") for t in teachers}
-# print(Lessons)
-
-# First 4 teachers are fixed to first 4 classes (except english)
-#  TODO: у нас еще есть музыка и укрм. and explain
-# pairings = list(zip(teachers[:4], classes[:4]))
-# for t,c in pairings:
-#     for s in subjects:
-#         if s != 'english' and Curriculum.get((c,s),0) > 0:
-#             model1.Add(Teaches[t,c,s] == 1)
-#     for c2 in classes:
-#         if c2 != c:
-#             for s in subjects:
-#                 model1.Add(Teaches[t,c2,s] == 0)
-#     hours = sum(Curriculum.get((c,s),0) for s in subjects if s != 'english')
-#     model1.Add(Lessons[t] == hours)
-
-# Other or maybe ALL(?) teachers by approbation
+# связываем нагрузку с предметами по Approbation
 for t in teachers:
     total = []
     for c in classes:
         for s in subjects:
-            hrs = Curriculum.get((c,s),0)
+            hrs = Curriculum.get((c, s), 0)
             if hrs > 0:
-                total.append(hrs * Teaches[t,c,s])
-            if Approbation.get((t,s),0) == 0:
-                model1.Add(Teaches[t,c,s] == 0)
+                # event всегда закреплён за T8
+                if s == 'event':
+                    if t == 'T8':
+                        total.append(hrs * Teaches[t, c, s])
+                    else:
+                        model1.Add(Teaches[t, c, s] == 0)
+                # остальные предметы — по Approbation
+                elif Approbation.get((t, s), 0) == 1:
+                    total.append(hrs * Teaches[t, c, s])
+                else:
+                    model1.Add(Teaches[t, c, s] == 0)
+            else:
+                model1.Add(Teaches[t, c, s] == 0)
+    # нагрузка
     if total:
         model1.Add(Lessons[t] == sum(total))
-    model1.Add(Lessons[t] <= 25)
-    # model1.Add(Lessons[t] >= 14)
+    else:
+        model1.Add(Lessons[t] == 0)
+    model1.Add(Lessons[t] <= 30)
 
-# TODO: explain
+# у каждого (class, subject) ровно один учитель
 for c in classes:
     for s in subjects:
-        if Curriculum.get((c,s),0) > 0:
-            model1.Add(sum(Teaches[t,c,s] for t in teachers) == 1)
+        hrs = Curriculum.get((c, s), 0)
+        if hrs > 0:
+            if s == 'event':
+                # только T8
+                model1.Add(Teaches['T8', c, s] == 1)
+            else:
+                possible_teachers = [t for t in teachers if Approbation.get((t, s), 0) == 1]
+                if not possible_teachers:
+                    raise ValueError(f"❌ Нет учителя для предмета {s} в классе {c}")
+                model1.Add(sum(Teaches[t, c, s] for t in possible_teachers) == 1)
 
+# решаем Phase 1
 solver1 = cp_model.CpSolver()
 solver1.parameters.max_time_in_seconds = 20
-solver1.Solve(model1)
+status1 = solver1.Solve(model1)
 
-# Store assignment result in dict teacher_of[(c,s)]
 teacher_of = {}
-for c in classes:
-    for s in subjects:
-        for t in teachers:
-            if solver1.Value(Teaches[t,c,s]):
-                teacher_of[(c,s)] = t
+if status1 in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+    for c in classes:
+        for s in subjects:
+            for t in teachers:
+                if solver1.Value(Teaches[t, c, s]):
+                    teacher_of[(c, s)] = t
+    print("✅ Phase 1 solved. Teacher assignment ready.")
+else:
+    print("❌ Phase 1 has no feasible solution.")
 
-print(teacher_of)
 
 # ------------------------
 # PHASE 2: Timetable
