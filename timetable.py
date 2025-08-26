@@ -356,40 +356,64 @@ status2 = solver2.Solve(model2)
 # ------------------------
 # VISUALIZATION
 # ------------------------
-def show_timetable(Timetable, classes, subjects, rooms, days, lessons, solver, teacher_of):
+import matplotlib.patches as patches
+
+def show_timetable(Timetable, classes, subjects, rooms, days, lessons, solver, teacher_of, Lessons):
     n = len(classes)
-    fig, axes = plt.subplots(n // 3 + 1, 3, figsize=(12, 2*n))
+    fig, axes = plt.subplots(n // 3 + 1, 3, figsize=(14, 2.5*n))
     axes = axes.flatten()
 
     for idx, c in enumerate(classes):
         ax = axes[idx]
         ax.set_title(f"Class {c}")
-        y = H
-        for d in days:
-            for h in lessons:
-                subj = None
-                room = None
-                teacher = None
+
+        # Сетка: дни по оси Y, уроки по оси X
+        for di, d in enumerate(days):
+            for hi, h in enumerate(lessons):
+                entries = []
                 for s in subjects:
                     for r in rooms:
                         if solver.Value(Timetable[c, s, r, d, h]):
-                            subj = s
-                            room = r
-                            teacher = teacher_of.get((c, s))
-                if subj:
-                    txt = f"{subj}\n{room}\n{teacher}"
-                    ax.text(h, y, txt, ha='center', va='center', fontsize=6,
-                            bbox=dict(facecolor='lightgrey', alpha=0.5))
-            ax.text(0, y+0.3, d, fontsize=8, ha='right')
-            y -= 1
-        ax.set_xlim(0, len(lessons)+1)
-        ax.set_ylim(0, H+1)
-        ax.axis('off')
+                            teacher = teacher_of.get((c, s), "?")
+                            entries.append((s, r, teacher))
+
+                if entries:
+                    # Координаты клетки
+                    x0 = hi
+                    y0 = len(days) - di - 1
+                    # рисуем прямоугольник
+                    rect = patches.Rectangle((x0, y0), 1, 1,
+                                             linewidth=0.5, edgecolor='black',
+                                             facecolor='lightgrey', alpha=0.7)
+                    ax.add_patch(rect)
+
+                    # текст: если несколько, печатаем через \n
+                    txt = "\n".join([f"{s}/{r}/{t}" for (s, r, t) in entries])
+                    ax.text(x0+0.5, y0+0.5, txt, ha='center', va='center', fontsize=6)
+
+        # Оси
+        ax.set_xticks(range(len(lessons)))
+        ax.set_xticklabels([f"L{h}" for h in lessons])
+        ax.set_yticks(range(len(days)))
+        ax.set_yticklabels(days[::-1])  # сверху понедельник
+        ax.set_xlim(0, len(lessons))
+        ax.set_ylim(0, len(days))
+        ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+        ax.invert_yaxis()  # чтобы Mo был сверху
+
     plt.tight_layout()
     plt.show()
 
+    # ------------------------
+    # Teacher workload table
+    # ------------------------
+    print("\n=== Teacher Workload ===")
+    for t in teachers:
+        print(f"{t}: {solver.Value(Lessons[t])} hours")
+
+
 if status2 in (cp_model.OPTIMAL, cp_model.FEASIBLE):
     print("✅ Feasible timetable found")
-    show_timetable(Timetable, classes, subjects, rooms, days, lessons, solver2, teacher_of)
+    show_timetable(Timetable, classes, subjects, rooms, days, lessons, solver2, teacher_of, Lessons)
 else:
     print("❌ No feasible timetable")
