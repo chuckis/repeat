@@ -344,6 +344,15 @@ for d, h in slots:
                     model2.Add(Timetable[c, opk_subject, r, d2, h2] == 0).OnlyEnforceIf(bool_var)
 model2.Add(sum(opk_slot_bools) == 1)
 
+# Ограничение: crafts только на 2, 3, 6 или 7 уроке
+allowed_crafts_lessons = [2, 3, 6, 7]
+for c in classes:
+    for r in rooms:
+        for d in days:
+            for h in lessons:
+                if h not in allowed_crafts_lessons:
+                    model2.Add(Timetable[c, 'crafts', r, d, h] == 0)
+
 # Ограничение: один учитель ≤ 1 урок в слот (кроме совместных OPK)
 for t in teachers:
     for d in days:
