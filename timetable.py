@@ -353,6 +353,24 @@ for c in classes:
                 if h not in allowed_crafts_lessons:
                     model2.Add(Timetable[c, 'crafts', r, d, h] == 0)
 
+# Ограничение: sport только во вторник и четверг и пятницу
+allowed_sport_days = ['Tu', 'Th', 'Fr']
+for c in classes:
+    for r in rooms:
+        for d in days:
+            for h in lessons:
+                if d not in allowed_sport_days:
+                    model2.Add(Timetable[c, 'sport', r, d, h] == 0)
+
+# Ограничение: ippoter в классах 5-9 только в среду
+for c in range(5, 10):
+    for r in rooms:
+        for d in days:
+            if d != 'We':
+                for h in lessons:
+                    model2.Add(Timetable[c, 'ippoter', r, d, h] == 0)
+
+
 # Ограничение: один учитель ≤ 1 урок в слот (кроме совместных OPK)
 for t in teachers:
     for d in days:
