@@ -15,7 +15,7 @@ teachers = ['T1','T2','T3','T4','T5','T6','T7', 'T8', 'T9', 'T10', 'T11',
             'T12','T13','T14', 'T15', 'T16', 'T17', 'T18', 'T19', 'T20', 'T21', 'T22']
 subjects = ['arithm', 'math', 'ukrmol', 'ukrm','english','IT','biology',
             'history','arts','music','crafts','sport',
-            'physics','geo','pravozn', 'chem', 'prirodozn', 'ippoter', 'navch',
+            'physics','geo','pravozn', 'chem', 'prirod', 'ippoter', 'navch',
             'CSL', 'OPK', 'JS', 'event']
 classes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 days = ['Mo', 'Tu', 'We', 'Th', 'Fr']
@@ -29,7 +29,7 @@ Curriculum = dict()
 Curriculum[(1, 'ukrmol')] = 6
 Curriculum[(1, 'english')] = 3
 Curriculum[(1, 'arithm')] = 6
-Curriculum[(1, 'prirodozn')] = 3
+Curriculum[(1, 'prirod')] = 3
 Curriculum[(1, 'arts')] = 1
 Curriculum[(1, 'music')] = 1
 Curriculum[(1, 'crafts')] = 1
@@ -49,16 +49,17 @@ Curriculum[(2, 'crafts')] = 1
 Curriculum[(2, 'sport')] = 3
 Curriculum[(2, 'navch')] = 4
 Curriculum[(2, 'IT')] = 1
-Curriculum[(2, 'prirodozn')] = 3
+Curriculum[(2, 'prirod')] = 3
 Curriculum[(2, 'ippoter')] = 1
 Curriculum[(2, 'CSL')] = 1
 Curriculum[(2, 'OPK')] = 1
+Curriculum[(2, 'JS')] = 1
 
 Curriculum[(3, 'ukrmol')] = 6
 Curriculum[(3, 'english')] = 3
 Curriculum[(3, 'arithm')] = 6
-Curriculum[(3, 'prirodozn')] = 3
-Curriculum[(3, 'arts')] = 2
+Curriculum[(3, 'prirod')] = 3
+Curriculum[(3, 'arts')] = 1
 Curriculum[(3, 'music')] = 1
 Curriculum[(3, 'crafts')] = 1
 Curriculum[(3, 'sport')] = 2
@@ -66,12 +67,13 @@ Curriculum[(3, 'IT')] = 1
 Curriculum[(3, 'ippoter')] = 1
 Curriculum[(3, 'CSL')] = 1
 Curriculum[(3, 'OPK')] = 1
+Curriculum[(3, 'JS')] = 1
 
 Curriculum[(4, 'ukrmol')] = 7
 Curriculum[(4, 'english')] = 3
 Curriculum[(4, 'arithm')] = 6
 Curriculum[(4, 'arts')] = 1
-Curriculum[(4, 'prirodozn')] = 3
+Curriculum[(4, 'prirod')] = 3
 Curriculum[(4, 'music')] = 1
 Curriculum[(4, 'crafts')] = 1
 Curriculum[(4, 'sport')] = 2
@@ -79,12 +81,13 @@ Curriculum[(4, 'IT')] = 1
 Curriculum[(4, 'ippoter')] = 1
 Curriculum[(4, 'CSL')] = 1
 Curriculum[(4, 'OPK')] = 1
+Curriculum[(4, 'JS')] = 1
 
 Curriculum[(5, 'ukrm')] = 6
 Curriculum[(5, 'english')] = 3
 Curriculum[(5, 'math')] = 6
 Curriculum[(5, 'IT')] = 1
-Curriculum[(5, 'prirodozn')] = 2
+Curriculum[(5, 'prirod')] = 2
 Curriculum[(5, 'arts')] = 1
 Curriculum[(5, 'music')] = 1
 Curriculum[(5, 'crafts')] = 1
@@ -92,6 +95,7 @@ Curriculum[(5, 'sport')] = 2
 Curriculum[(5, 'ippoter')] = 1
 Curriculum[(5, 'CSL')] = 1
 Curriculum[(5, 'OPK')] = 1
+Curriculum[(5, 'JS')] = 1
 
 Curriculum[(6, 'ukrm')] = 5
 Curriculum[(6, 'english')] = 3
@@ -133,7 +137,6 @@ Curriculum[(8, 'physics')] = 2
 Curriculum[(8, 'history')] = 2
 Curriculum[(8, 'chem')] = 2
 Curriculum[(8, 'geo')] = 2
-Curriculum[(8, 'arts')] = 2
 Curriculum[(8, 'sport')] = 2
 Curriculum[(8, 'IT')] = 2
 Curriculum[(8, 'ippoter')] = 1
@@ -159,22 +162,22 @@ Curriculum[(9, 'OPK')] = 1
 # Approbation (кто какие предметы может вести)
 Approbation = {
     ('T1','navch'):1,
-    ('T1','prirodozn'):1,
+    ('T1','prirod'):1,
     ('T1','ukrmol'):1,
     ('T1','arithm'):1,
     ('T2', 'navch'):1,
-    ('T2','prirodozn'):1,
+    ('T2','prirod'):1,
     ('T2','ukrmol'):1,
     ('T2','arithm'):1,
     ('T3', 'ukrm'):1,
     ('T3','ukrmol'):1,
     ('T3','arithm'):1,
-    ('T3','prirodozn'):1,
+    ('T3','prirod'):1,
     ('T3', 'pravozn'):1,
     ('T4', 'music'):1,
     ('T4','arithm'):1,
     ('T4','ukrmol'):1,
-    ('T4','prirodozn'):1,
+    ('T4','prirod'):1,
     ('T5', 'CSL'):1,
     ('T6', 'math'):1,
     ('T7', 'arts'):1,
@@ -362,6 +365,29 @@ for c in classes:
                 if d not in allowed_sport_days:
                     model2.Add(Timetable[c, 'sport', r, d, h] == 0)
 
+# Ограничение: biology только в понедельник и пятницу
+allowed_bio_days = ['Mo', 'Fr']
+for c in classes:
+    for r in rooms:
+        for d in days:
+            for h in lessons:
+                if d not in allowed_bio_days:
+                    model2.Add(Timetable[c, 'biology', r, d, h] == 0)
+
+# Ограничение: math в 5-9 классах только в 1, 2, 3, 4 урок 
+# с понедельника по четверг, а в пятницу с 1 по 7 урок
+allowed_math_lessons = {'Mo': [1, 2, 3, 4],
+                        'Tu': [1, 2, 3, 4],
+                        'We': [1, 2, 3, 4],
+                        'Th': [1, 2, 3, 4], 
+                        'Fr': [1, 2, 3, 4, 5, 6, 7]}
+for c in range(5, 10):
+    for r in rooms:
+        for d in days:
+            for h in lessons:
+                if h not in allowed_math_lessons[d]:
+                    model2.Add(Timetable[c, 'math', r, d, h] == 0)
+                    
 # Ограничение: ippoter в классах 5-9 только в среду
 for c in range(5, 10):
     for r in rooms:
