@@ -20,7 +20,7 @@ subjects = ['arithm', 'math', 'ukrmol', 'ukrm','english','IT','biology',
 classes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 days = ['Mo', 'Tu', 'We', 'Th', 'Fr']
 rooms = ['R1', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10', 'R12', 'R13', 'R14']
-H = 7
+H = 8
 lessons = list(range(1, H+1))
 
 # classes hours of subj
@@ -38,7 +38,7 @@ Curriculum[(1, 'OPK')] = 1
 Curriculum[(1, 'JS')] = 1
 Curriculum[(1, 'ippoter')] = 1
 Curriculum[(1, 'navch')] = 4
-Curriculum[(1, 'CSL')] = 1
+# Curriculum[(1, 'CSL')] = 1
 
 Curriculum[(2, 'ukrmol')] = 7
 Curriculum[(2, 'english')] = 3
@@ -46,7 +46,7 @@ Curriculum[(2, 'arithm')] = 6
 Curriculum[(2, 'arts')] = 1
 Curriculum[(2, 'music')] = 1
 Curriculum[(2, 'crafts')] = 1
-Curriculum[(2, 'sport')] = 3
+Curriculum[(2, 'sport')] = 2
 Curriculum[(2, 'navch')] = 4
 Curriculum[(2, 'IT')] = 1
 Curriculum[(2, 'prirod')] = 3
@@ -83,12 +83,13 @@ Curriculum[(4, 'CSL')] = 1
 Curriculum[(4, 'OPK')] = 1
 Curriculum[(4, 'JS')] = 1
 
-Curriculum[(5, 'ukrm')] = 6
+Curriculum[(5, 'ukrm')] = 4 # TODO: ukrlit add
 Curriculum[(5, 'english')] = 3
-Curriculum[(5, 'math')] = 6
+Curriculum[(5, 'math')] = 5
 Curriculum[(5, 'IT')] = 1
 Curriculum[(5, 'prirod')] = 2
 Curriculum[(5, 'arts')] = 1
+Curriculum[(5, 'history')] = 1
 Curriculum[(5, 'music')] = 1
 Curriculum[(5, 'crafts')] = 1
 Curriculum[(5, 'sport')] = 2
@@ -97,12 +98,12 @@ Curriculum[(5, 'CSL')] = 1
 Curriculum[(5, 'OPK')] = 1
 Curriculum[(5, 'JS')] = 1
 
-Curriculum[(6, 'ukrm')] = 5
+Curriculum[(6, 'ukrm')] = 4
 Curriculum[(6, 'english')] = 3
 Curriculum[(6, 'math')] = 4
 Curriculum[(6, 'IT')] = 1
 Curriculum[(6, 'biology')] = 2
-Curriculum[(6, 'history')] = 2
+Curriculum[(6, 'history')] = 1
 Curriculum[(6, 'geo')] = 2
 Curriculum[(6, 'arts')] = 2
 Curriculum[(6, 'music')] = 1
@@ -112,17 +113,18 @@ Curriculum[(6, 'ippoter')] = 1
 Curriculum[(6, 'JS')] = 1
 Curriculum[(6, 'OPK')] = 1
 
-Curriculum[(7, 'ukrm')] = 6
+Curriculum[(7, 'ukrm')] = 4
 Curriculum[(7, 'english')] = 3
 Curriculum[(7, 'math')] = 4
 Curriculum[(7, 'IT')] = 1
 Curriculum[(7, 'biology')] = 2
 Curriculum[(7, 'physics')] = 2
-Curriculum[(7, 'history')] = 2
+Curriculum[(7, 'history')] = 2 # merged with 8
 Curriculum[(7, 'geo')] = 2
 Curriculum[(7, 'arts')] = 1
 Curriculum[(7, 'music')] = 1
 Curriculum[(7, 'crafts')] = 1
+Curriculum[(7, 'chem')] = 2
 Curriculum[(7, 'sport')] = 2
 Curriculum[(7, 'IT')] = 1
 Curriculum[(7, 'JS')] = 1
@@ -138,6 +140,7 @@ Curriculum[(8, 'history')] = 2
 Curriculum[(8, 'chem')] = 2
 Curriculum[(8, 'geo')] = 2
 Curriculum[(8, 'sport')] = 2
+Curriculum[(8, 'crafts')] = 1
 Curriculum[(8, 'IT')] = 2
 Curriculum[(8, 'ippoter')] = 1
 Curriculum[(8, 'JS')] = 1
@@ -145,7 +148,7 @@ Curriculum[(8, 'OPK')] = 1
 
 Curriculum[(9, 'ukrm')] = 4
 Curriculum[(9, 'english')] = 3
-Curriculum[(9, 'math')] = 6
+Curriculum[(9, 'math')] = 4
 Curriculum[(9, 'biology')] = 2
 Curriculum[(9, 'pravozn')] = 1
 Curriculum[(9, 'physics')] = 2
@@ -157,6 +160,7 @@ Curriculum[(9, 'sport')] = 2
 Curriculum[(9, 'IT')] = 2
 Curriculum[(9, 'ippoter')] = 1
 Curriculum[(9, 'OPK')] = 1
+Curriculum[(9, 'crafts')] = 1
 
 
 # Approbation (кто какие предметы может вести)
@@ -193,8 +197,7 @@ Approbation = {
     ('T15', 'chem'):1,
     ('T16', 'crafts'):1,
     ('T17', 'crafts'):1,
-    ('T18', 'OPK'):1,
-    ('T18', 'JS'):1,
+    # ('T18', 'JS'):1,
     ('T19', 'physics'):1,
     ('T20', 'ukrm'):1,
     ('T21', 'ippoter'):1,
@@ -203,7 +206,7 @@ Approbation = {
 
 
 # ------------------------
-# PHASE 1: Teacher assignment (Approbation-driven)
+# PHASE 1: Teacher assignment (fixed for 1-4 classes, but open for others)
 # ------------------------
 model1 = cp_model.CpModel()
 
@@ -215,41 +218,58 @@ for t in teachers:
 
 Lessons = {t: model1.NewIntVar(0, 40, f"Lessons[{t}]") for t in teachers}
 
-# связываем нагрузку с предметами по Approbation
+# базовые предметы для 1-4 классов
+base_subjects = {"ukrmol", "arithm", "navch", "ukrm"}
+pairings = list(zip(teachers[:4], classes[:4]))  # (T1,1), (T2,2), (T3,3), (T4,4)
+
+for t, c in pairings:
+    for s in base_subjects:
+        if Curriculum.get((c, s), 0) > 0:
+            # закрепляем учителя за этим предметом в "своём" классе
+            model1.Add(Teaches[t, c, s] == 1)
+            # запрещаем другим учителям этот предмет в этом классе
+            for other_t in teachers:
+                if other_t != t:
+                    model1.Add(Teaches[other_t, c, s] == 0)
+
+# остальное распределяем по approbation
 for t in teachers:
     total = []
     for c in classes:
         for s in subjects:
             hrs = Curriculum.get((c, s), 0)
             if hrs > 0:
-                # event всегда закреплён за T8
+                # event всегда ведёт T8
                 if s == 'event':
                     if t == 'T8':
                         total.append(hrs * Teaches[t, c, s])
+                        model1.Add(Teaches[t, c, s] == 1)
                     else:
                         model1.Add(Teaches[t, c, s] == 0)
-                # остальные предметы — по Approbation
+                # остальные предметы по approbation
                 elif Approbation.get((t, s), 0) == 1:
                     total.append(hrs * Teaches[t, c, s])
                 else:
                     model1.Add(Teaches[t, c, s] == 0)
             else:
                 model1.Add(Teaches[t, c, s] == 0)
-    # нагрузка
+
     if total:
         model1.Add(Lessons[t] == sum(total))
     else:
         model1.Add(Lessons[t] == 0)
     model1.Add(Lessons[t] <= 30)
 
-# у каждого (class, subject) ровно один учитель
+# каждая пара (class, subject) должна иметь ровно одного учителя
 for c in classes:
     for s in subjects:
         hrs = Curriculum.get((c, s), 0)
         if hrs > 0:
             if s == 'event':
-                # только T8
                 model1.Add(Teaches['T8', c, s] == 1)
+            elif c in (1, 2, 3, 4) and s in base_subjects:
+                # уже зафиксировано → ничего не делаем
+                pass
             else:
                 possible_teachers = [t for t in teachers if Approbation.get((t, s), 0) == 1]
                 if not possible_teachers:
@@ -272,6 +292,45 @@ if status1 in (cp_model.OPTIMAL, cp_model.FEASIBLE):
 else:
     print("❌ Phase 1 has no feasible solution.")
 
+
+# ------------------------
+# TEACHER WORKLOAD SUMMARY (после Phase 1)
+# ------------------------
+from collections import defaultdict
+
+def summarize_teacher_load(teachers, classes, subjects, Curriculum, Lessons, teacher_of, solver1):
+    # 1) Часы по модели (Lessons[t])
+    hours_by_model = {t: solver1.Value(Lessons[t]) for t in teachers}
+
+    # 2) Пересчёт по назначению teacher_of и Curriculum
+    hours_by_calc = defaultdict(int)
+    for c in classes:
+        for s in subjects:
+            hrs = Curriculum.get((c, s), 0)
+            if hrs > 0:
+                t = teacher_of.get((c, s))
+                if t is None:
+                    print(f"⚠️ Нет назначенного учителя для ({c}, '{s}') — проверь Phase 1.")
+                    continue
+                hours_by_calc[t] += hrs
+
+    # Сводная печать (сортировка по teachers)
+    print("\n=== Teacher workload (hours) ===")
+    print(f"{'Teacher':<8} {'Model':>6} {'Calc':>6}  Note")
+    for t in teachers:
+        m = hours_by_model.get(t, 0)
+        c = hours_by_calc.get(t, 0)
+        mark = "" if m == c else "  ⛔ mismatch"
+        print(f"{t:<8} {m:>6} {c:>6}  {mark}")
+
+    # Итого по школе (проверка сумм)
+    total_model = sum(hours_by_model.values())
+    total_calc  = sum(hours_by_calc.values())
+    print(f"\nTOTAL  Model={total_model}  Calc={total_calc} {'OK' if total_model==total_calc else '⛔'}")
+
+# вызов сразу после успешного решения Phase 1:
+if status1 in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+    summarize_teacher_load(teachers, classes, subjects, Curriculum, Lessons, teacher_of, solver1)
 
 # ------------------------
 # PHASE 2: Timetable
@@ -376,18 +435,18 @@ for c in classes:
 
 # Ограничение: math в 5-9 классах только в 1, 2, 3, 4 урок 
 # с понедельника по четверг, а в пятницу с 1 по 7 урок
-allowed_math_lessons = {'Mo': [1, 2, 3, 4],
-                        'Tu': [1, 2, 3, 4],
-                        'We': [1, 2, 3, 4],
-                        'Th': [1, 2, 3, 4], 
-                        'Fr': [1, 2, 3, 4, 5, 6, 7]}
-for c in range(5, 10):
-    for r in rooms:
-        for d in days:
-            for h in lessons:
-                if h not in allowed_math_lessons[d]:
-                    model2.Add(Timetable[c, 'math', r, d, h] == 0)
-                    
+# allowed_math_lessons = {'Mo': [1, 2, 3, 4],
+#                         'Tu': [1, 2, 3, 4],
+#                         'We': [1, 2, 3, 4],
+#                         'Th': [1, 2, 3, 4], 
+#                         'Fr': [1, 2, 3, 4, 5, 6, 7]}
+# for c in range(5, 10):
+#     for r in rooms:
+#         for d in days:
+#             for h in lessons:
+#                 if h not in allowed_math_lessons[d]:
+#                     model2.Add(Timetable[c, 'math', r, d, h] == 0)
+
 # Ограничение: ippoter в классах 5-9 только в среду
 for c in range(5, 10):
     for r in rooms:
