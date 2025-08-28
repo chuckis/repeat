@@ -27,13 +27,14 @@ lessons = list(range(1, H+1))
 # classes hours of subj
 Curriculum = dict()
 
+Curriculum[(1, 'event')] = 1
 Curriculum[(1, 'ukrmol')] = 6
 Curriculum[(1, 'engmol')] = 3
 Curriculum[(1, 'arithm')] = 6
 Curriculum[(1, 'prirod')] = 3
 Curriculum[(1, 'arts')] = 1
 Curriculum[(1, 'music')] = 1
-Curriculum[(1, 'crafts')] = 1
+# Curriculum[(1, 'crafts')] = 1
 Curriculum[(1, 'craftsboys')] = 1
 Curriculum[(1, 'sport')] = 2
 Curriculum[(1, 'OPK')] = 1
@@ -42,12 +43,13 @@ Curriculum[(1, 'ippoter')] = 1
 Curriculum[(1, 'navch')] = 4
 # Curriculum[(1, 'CSL')] = 1
 
+Curriculum[(2, 'event')] = 1
 Curriculum[(2, 'ukrmol')] = 7
 Curriculum[(2, 'engmol')] = 3
 Curriculum[(2, 'arithm')] = 6
 Curriculum[(2, 'arts')] = 1
 Curriculum[(2, 'music')] = 1
-Curriculum[(2, 'crafts')] = 1
+# Curriculum[(2, 'crafts')] = 1
 Curriculum[(2, 'craftsboys')] = 1
 Curriculum[(2, 'sport')] = 2
 Curriculum[(2, 'navch')] = 4
@@ -58,13 +60,14 @@ Curriculum[(2, 'CSL')] = 1
 Curriculum[(2, 'OPK')] = 1
 Curriculum[(2, 'JS')] = 1
 
+Curriculum[(3, 'event')] = 1
 Curriculum[(3, 'ukrmol')] = 6
 Curriculum[(3, 'engmol')] = 3
 Curriculum[(3, 'arithm')] = 6
 Curriculum[(3, 'prirod')] = 3
 Curriculum[(3, 'arts')] = 1
 Curriculum[(3, 'music')] = 1
-Curriculum[(3, 'crafts')] = 1
+# Curriculum[(3, 'crafts')] = 1
 Curriculum[(3, 'craftsboys')] = 1
 Curriculum[(3, 'sport')] = 2
 Curriculum[(3, 'IT')] = 1
@@ -73,6 +76,7 @@ Curriculum[(3, 'CSL')] = 1
 Curriculum[(3, 'OPK')] = 1
 Curriculum[(3, 'JS')] = 1
 
+Curriculum[(4, 'event')] = 1
 Curriculum[(4, 'ukrmol')] = 7
 Curriculum[(4, 'engmol')] = 3
 Curriculum[(4, 'arithm')] = 6
@@ -88,6 +92,7 @@ Curriculum[(4, 'CSL')] = 1
 Curriculum[(4, 'OPK')] = 1
 Curriculum[(4, 'JS')] = 1
 
+Curriculum[(5, 'event')] = 1  
 Curriculum[(5, 'ukrm')] = 4
 Curriculum[(5, 'ukrlit')] = 3
 Curriculum[(5, 'english')] = 3
@@ -105,6 +110,7 @@ Curriculum[(5, 'CSL')] = 1
 Curriculum[(5, 'OPK')] = 1
 Curriculum[(5, 'JS')] = 1
 
+Curriculum[(6, 'event')] = 1
 Curriculum[(6, 'ukrm')] = 4
 Curriculum[(6, 'ukrlit')] = 3
 Curriculum[(6, 'english')] = 3
@@ -122,6 +128,7 @@ Curriculum[(6, 'ippoter')] = 1
 Curriculum[(6, 'JS')] = 1
 Curriculum[(6, 'OPK')] = 1
 
+Curriculum[(7, 'event')] = 1
 Curriculum[(7, 'ukrm')] = 4
 Curriculum[(7, 'ukrlit')] = 3
 Curriculum[(7, 'english')] = 3
@@ -141,6 +148,7 @@ Curriculum[(7, 'JS')] = 1
 Curriculum[(7, 'OPK')] = 1
 Curriculum[(7, 'ippoter')] = 1
 
+Curriculum[(8, 'event')] = 1
 Curriculum[(8, 'ukrm')] = 4
 Curriculum[(8, 'ukrlit')] = 3
 Curriculum[(8, 'english')] = 3
@@ -158,6 +166,7 @@ Curriculum[(8, 'ippoter')] = 1
 Curriculum[(8, 'JS')] = 1
 Curriculum[(8, 'OPK')] = 1
 
+Curriculum[(9, 'event')] = 1
 Curriculum[(9, 'ukrm')] = 4
 Curriculum[(9, 'ukrlit')] = 3
 Curriculum[(9, 'english')] = 3
@@ -197,7 +206,6 @@ Approbation = {
     ('T3','ukrmol'):1,
     ('T3','arithm'):1,
     ('T3','prirod'):1,
-    ('T3','crafts'):1,  # Добавлено для базовых предметов
     ('T3','navch'):1,   # Добавлено для базовых предметов
     ('T3', 'pravozn'):1,
     
@@ -206,7 +214,6 @@ Approbation = {
     ('T4','arithm'):1,
     ('T4','ukrmol'):1,
     ('T4','prirod'):1,
-    ('T4','crafts'):1,  # Добавлено для базовых предметов
     ('T4','navch'):1,   # Добавлено для базовых предметов
     
     # Предметники
@@ -412,10 +419,14 @@ for c in classes:
 # Ограничение: в понедельник на первом уроке все классы имеют event
 event_subject = 'event'
 for c in classes:
+    # Обязательный урок в понедельник, 1-й урок
     model2.Add(Timetable[c, event_subject, 'Mo', 1] == 1)
-    for s in subjects:
-        if s != event_subject:
-            model2.Add(Timetable[c, s, 'Mo', 1] == 0)
+    # Другие слоты в понедельник и в другие дни запрещаем для event
+    for d in days:
+        for h in lessons:
+            if (d, h) != ('Mo', 1):
+                model2.Add(Timetable[c, event_subject, d, h] == 0)
+
 
 # Ограничение: OPK для классов 1-5 только в любые 2 дня, кроме вторника
 # for c in range(1, 6):
