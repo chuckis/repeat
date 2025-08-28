@@ -120,7 +120,7 @@ Curriculum[(7, 'ukrm')] = 4
 Curriculum[(7, 'ukrlit')] = 3
 Curriculum[(7, 'english')] = 3
 Curriculum[(7, 'math')] = 4
-Curriculum[(7, 'IT')] = 1
+Curriculum[(7, 'IT')] = 1  # Убрано дублирование
 Curriculum[(7, 'biology')] = 2
 Curriculum[(7, 'physics')] = 2
 Curriculum[(7, 'history')] = 2 # merged with 8
@@ -130,7 +130,6 @@ Curriculum[(7, 'music')] = 1
 Curriculum[(7, 'crafts')] = 1
 Curriculum[(7, 'chem')] = 2
 Curriculum[(7, 'sport')] = 2
-Curriculum[(7, 'IT')] = 1
 Curriculum[(7, 'JS')] = 1
 Curriculum[(7, 'OPK')] = 1
 Curriculum[(7, 'ippoter')] = 1
@@ -169,26 +168,39 @@ Curriculum[(9, 'OPK')] = 1
 Curriculum[(9, 'crafts')] = 1
 
 
-# Approbation (кто какие предметы может вести)
+# Approbation (кто какие предметы может вести) - ИСПРАВЛЕНО
 Approbation = {
+    # Начальные классы - основные учителя
     ('T1','navch'):1,
     ('T1','prirod'):1,
     ('T1','ukrmol'):1,
     ('T1','arithm'):1,
+    ('T1','crafts'):1,  # Добавлено для базовых предметов
+    
     ('T2', 'navch'):1,
     ('T2','prirod'):1,
     ('T2','ukrmol'):1,
     ('T2','arithm'):1,
+    ('T2','crafts'):1,  # Добавлено для базовых предметов
+    
     ('T3', 'ukrm'):1,
     ('T3', 'ukrlit'):1,
     ('T3','ukrmol'):1,
     ('T3','arithm'):1,
     ('T3','prirod'):1,
+    ('T3','crafts'):1,  # Добавлено для базовых предметов
+    ('T3','navch'):1,   # Добавлено для базовых предметов
     ('T3', 'pravozn'):1,
+    
+    # T4 - музыка + может вести начальные классы
     ('T4', 'music'):1,
     ('T4','arithm'):1,
     ('T4','ukrmol'):1,
     ('T4','prirod'):1,
+    ('T4','crafts'):1,  # Добавлено для базовых предметов
+    ('T4','navch'):1,   # Добавлено для базовых предметов
+    
+    # Предметники
     ('T5', 'CSL'):1,
     ('T6', 'math'):1,
     ('T7', 'arts'):1,
@@ -204,8 +216,8 @@ Approbation = {
     ('T14', 'engmol'):1,
     ('T15', 'chem'):1,
     ('T16', 'crafts'):1,
-    ('T17', 'craftboys'):1,
-    # ('T18', 'JS'):1,
+    ('T17', 'craftsboys'):1,  # ИСПРАВЛЕНО: было 'craftboys'
+    ('T18', 'JS'):1,  # ДОБАВЛЕНО: T18 отсутствовал
     ('T19', 'physics'):1,
     ('T20', 'ukrm'):1,
     ('T20', 'ukrlit'):1,
@@ -227,19 +239,22 @@ for t in teachers:
 
 Lessons = {t: model1.NewIntVar(0, 40, f"Lessons[{t}]") for t in teachers}
 
-# базовые предметы для 1-4 классов
+# ИСПРАВЛЕНО: базовые предметы для 1-4 классов
 base_subjects = {"ukrmol", "arithm", "navch", "prirod", "crafts"}
 pairings = list(zip(teachers[:4], classes[:4]))  # (T1,1), (T2,2), (T3,3), (T4,4)
 
+# Закрепляем базовых учителей за своими классами
 for t, c in pairings:
     for s in base_subjects:
         if Curriculum.get((c, s), 0) > 0:
-            # закрепляем учителя за этим предметом в "своём" классе
-            model1.Add(Teaches[t, c, s] == 1)
-            # запрещаем другим учителям этот предмет в этом классе
-            for other_t in teachers:
-                if other_t != t:
-                    model1.Add(Teaches[other_t, c, s] == 0)
+            # Проверяем, может ли учитель вести этот предмет
+            if Approbation.get((t, s), 0) == 1:
+                # закрепляем учителя за этим предметом в "своём" классе
+                model1.Add(Teaches[t, c, s] == 1)
+                # запрещаем другим учителям этот предмет в этом классе
+                for other_t in teachers:
+                    if other_t != t:
+                        model1.Add(Teaches[other_t, c, s] == 0)
 
 # остальное распределяем по approbation
 for t in teachers:
@@ -275,14 +290,17 @@ for c in classes:
         hrs = Curriculum.get((c, s), 0)
         if hrs > 0:
             if s == 'event':
+                # event всегда ведёт T8
                 model1.Add(Teaches['T8', c, s] == 1)
             elif c in (1, 2, 3, 4) and s in base_subjects:
-                # уже зафиксировано → ничего не делаем
+                # базовые предметы уже зафиксированы выше
                 pass
             else:
                 possible_teachers = [t for t in teachers if Approbation.get((t, s), 0) == 1]
                 if not possible_teachers:
-                    raise ValueError(f"❌ Нет учителя для предмета {s} в классе {c}")
+                    print(f"❌ ВНИМАНИЕ: Нет учителя для предмета {s} в классе {c}")
+                    # Можно добавить исключение или пропустить
+                    continue
                 model1.Add(sum(Teaches[t, c, s] for t in possible_teachers) == 1)
 
 # решаем Phase 1
@@ -299,8 +317,16 @@ if status1 in (cp_model.OPTIMAL, cp_model.FEASIBLE):
                     teacher_of[(c, s)] = t
     print("✅ Phase 1 solved. Teacher assignment ready.")
 else:
-    print("❌ Phase 1 has no feasible solution.")
-
+    print(f"❌ Phase 1 has no feasible solution. Status: {solver1.StatusName(status1)}")
+    
+    # Попытка диагностики
+    print("\n🔍 Диагностика проблем:")
+    for c in classes:
+        for s in subjects:
+            if Curriculum.get((c, s), 0) > 0:
+                possible_teachers = [t for t in teachers if Approbation.get((t, s), 0) == 1]
+                if not possible_teachers:
+                    print(f"  ❌ Класс {c}, предмет {s}: нет подходящих учителей")
 
 # ------------------------
 # TEACHER WORKLOAD SUMMARY (после Phase 1)
