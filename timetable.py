@@ -368,128 +368,90 @@ if status1 in (cp_model.OPTIMAL, cp_model.FEASIBLE):
     summarize_teacher_load(teachers, classes, subjects, Curriculum, Lessons, teacher_of, solver1)
 
 # ------------------------
-# PHASE 2: Timetable
+# PHASE 2: Timetable (без кабинетов)
 # ------------------------
 model2 = cp_model.CpModel()
 
 Timetable = {}
 for c in classes:
     for s in subjects:
-        for r in rooms:
-            for d in days:
-                for h in lessons:
-                    Timetable[c, s, r, d, h] = model2.NewBoolVar(f"TT[{c},{s},{r},{d},{h}]")
+        for d in days:
+            for h in lessons:
+                Timetable[c, s, d, h] = model2.NewBoolVar(f"TT[{c},{s},{d},{h}]")
 
 # Curriculum adherence (каждый предмет = заданное количество часов)
 for c in classes:
     for s in subjects:
         hrs = Curriculum.get((c, s), 0)
         if hrs > 0:
-            model2.Add(sum(Timetable[c, s, r, d, h] for r in rooms for d in days for h in lessons) == hrs)
+            model2.Add(sum(Timetable[c, s, d, h] for d in days for h in lessons) == hrs)
 
-# Ограничение: в понедельник на первом уроке все классы имеют мероприятие в R1
+# Ограничение: в понедельник на первом уроке все классы имеют event
 event_subject = 'event'
-event_room = 'R1'
 for c in classes:
-    # Урок event в нужной комнате
-    model2.Add(Timetable[c, event_subject, event_room, 'Mo', 1] == 1)
-    # Все остальные предметы и комнаты запрещены
+    model2.Add(Timetable[c, event_subject, 'Mo', 1] == 1)
     for s in subjects:
-        for r in rooms:
-            if s != event_subject or r != event_room:
-                model2.Add(Timetable[c, s, r, 'Mo', 1] == 0)
+        if s != event_subject:
+            model2.Add(Timetable[c, s, 'Mo', 1] == 0)
 
 # Ограничение: OPK для классов 1-5 только в любые 2 дня, кроме вторника
 for c in range(1, 6):
     opk_day_bools = []
-    opk_slots = []
     for d in days:
         if d == 'Tu':
-            # Запрещаем OPK во вторник
             for h in lessons:
-                for r in rooms:
-                    model2.Add(Timetable[c, 'OPK', r, d, h] == 0)
+                model2.Add(Timetable[c, 'OPK', d, h] == 0)
         else:
-            # Булева переменная: есть ли OPK в этом дне
             opk_day = model2.NewBoolVar(f"opk_day_{c}_{d}")
             opk_day_bools.append(opk_day)
-            slot_sum = sum(Timetable[c, 'OPK', r, d, h] for r in rooms for h in lessons)
-            opk_slots.append(slot_sum)
-            # Если есть OPK в этом дне, то ровно один урок
-            # model2.Add(slot_sum == 1).OnlyEnforceIf(opk_day)
-            # Если нет OPK в этом дне, то 0 уроков
+            slot_sum = sum(Timetable[c, 'OPK', d, h] for h in lessons)
+            model2.Add(slot_sum >= 1).OnlyEnforceIf(opk_day)
             model2.Add(slot_sum == 0).OnlyEnforceIf(opk_day.Not())
-    # OPK может быть только в двух днях (кроме вторника)
     model2.Add(sum(opk_day_bools) == 2)
 
-# Ограничение: у 6-9 классов OPK вместе и в одном кабинете (R12)
-opk_room = 'R12'
-opk_subject = 'OPK'
+# Ограничение: у 6-9 классов OPK вместе (один слот для всех)
 slots = [(d, h) for d in days for h in lessons]
 opk_slot_bools = []
 for d, h in slots:
     bool_var = model2.NewBoolVar(f"opk_slot_{d}_{h}")
     opk_slot_bools.append(bool_var)
     for c in range(6, 10):
-        model2.Add(Timetable[c, opk_subject, opk_room, d, h] == 1).OnlyEnforceIf(bool_var)
-        for r in rooms:
-            if r != opk_room:
-                model2.Add(Timetable[c, opk_subject, r, d, h] == 0).OnlyEnforceIf(bool_var)
+        model2.Add(Timetable[c, 'OPK', d, h] == 1).OnlyEnforceIf(bool_var)
         for d2, h2 in slots:
             if (d2, h2) != (d, h):
-                for r in rooms:
-                    model2.Add(Timetable[c, opk_subject, r, d2, h2] == 0).OnlyEnforceIf(bool_var)
+                model2.Add(Timetable[c, 'OPK', d2, h2] == 0).OnlyEnforceIf(bool_var)
 model2.Add(sum(opk_slot_bools) == 1)
 
 # Ограничение: crafts только на 2, 3, 6 или 7 уроке
 allowed_crafts_lessons = [2, 3, 6, 7]
 for c in classes:
-    for r in rooms:
-        for d in days:
-            for h in lessons:
-                if h not in allowed_crafts_lessons:
-                    model2.Add(Timetable[c, 'crafts', r, d, h] == 0)
+    for d in days:
+        for h in lessons:
+            if h not in allowed_crafts_lessons:
+                model2.Add(Timetable[c, 'crafts', d, h] == 0)
 
-# Ограничение: sport только во вторник и четверг и пятницу
+# Ограничение: sport только во вторник, четверг и пятницу
 allowed_sport_days = ['Tu', 'Th', 'Fr']
 for c in classes:
-    for r in rooms:
-        for d in days:
+    for d in days:
+        if d not in allowed_sport_days:
             for h in lessons:
-                if d not in allowed_sport_days:
-                    model2.Add(Timetable[c, 'sport', r, d, h] == 0)
+                model2.Add(Timetable[c, 'sport', d, h] == 0)
 
 # Ограничение: biology только в понедельник и пятницу
 allowed_bio_days = ['Mo', 'Fr']
 for c in classes:
-    for r in rooms:
-        for d in days:
+    for d in days:
+        if d not in allowed_bio_days:
             for h in lessons:
-                if d not in allowed_bio_days:
-                    model2.Add(Timetable[c, 'biology', r, d, h] == 0)
+                model2.Add(Timetable[c, 'biology', d, h] == 0)
 
-# Ограничение: math в 5-9 классах только в 1, 2, 3, 4 урок 
-# с понедельника по четверг, а в пятницу с 1 по 7 урок
-# allowed_math_lessons = {'Mo': [1, 2, 3, 4],
-#                         'Tu': [1, 2, 3, 4],
-#                         'We': [1, 2, 3, 4],
-#                         'Th': [1, 2, 3, 4], 
-#                         'Fr': [1, 2, 3, 4, 5, 6, 7]}
-# for c in range(5, 10):
-#     for r in rooms:
-#         for d in days:
-#             for h in lessons:
-#                 if h not in allowed_math_lessons[d]:
-#                     model2.Add(Timetable[c, 'math', r, d, h] == 0)
-
-# Ограничение: ippoter в классах 5-9 только в среду
+# Ограничение: ippoter в 5-9 классах только в среду
 for c in range(5, 10):
-    for r in rooms:
-        for d in days:
-            if d != 'We':
-                for h in lessons:
-                    model2.Add(Timetable[c, 'ippoter', r, d, h] == 0)
-
+    for d in days:
+        if d != 'We':
+            for h in lessons:
+                model2.Add(Timetable[c, 'ippoter', d, h] == 0)
 
 # Ограничение: один учитель ≤ 1 урок в слот (кроме совместных OPK)
 for t in teachers:
@@ -499,18 +461,17 @@ for t in teachers:
             for c in classes:
                 for s in subjects:
                     if teacher_of.get((c, s)) == t:
-                        if not (s == 'OPK' and 6 <= c <= 9):  # OPK общий
-                            for r in rooms:
-                                normal_lessons.append(Timetable[c, s, r, d, h])
+                        if not (s == 'OPK' and 6 <= c <= 9):
+                            normal_lessons.append(Timetable[c, s, d, h])
             model2.Add(sum(normal_lessons) <= 1)
 
-# Objective: минимизируем расхождения с Curriculum (подстраховка)
+# Objective: минимизируем расхождения с Curriculum
 penalties = []
 for c in classes:
     for s in subjects:
         hrs = Curriculum.get((c, s), 0)
         if hrs > 0:
-            actual = sum(Timetable[c, s, r, d, h] for r in rooms for d in days for h in lessons)
+            actual = sum(Timetable[c, s, d, h] for d in days for h in lessons)
             diff = model2.NewIntVar(-hrs, hrs, f"diff_{c}_{s}")
             abs_diff = model2.NewIntVar(0, hrs, f"abs_diff_{c}_{s}")
             model2.Add(diff == actual - hrs)
@@ -528,7 +489,7 @@ status2 = solver2.Solve(model2)
 # ------------------------
 import matplotlib.pyplot as plt
 
-def show_timetable_table(Timetable, classes, subjects, rooms, days, lessons, solver):
+def show_timetable_table(Timetable, classes, subjects, days, lessons, solver):
     fig, ax = plt.subplots(figsize=(len(classes)*1.5, len(days)*len(lessons)*0.4))
 
     # соответствие английских кодов дней к укр. сокращениям
@@ -561,7 +522,7 @@ def show_timetable_table(Timetable, classes, subjects, rooms, days, lessons, sol
                 subj = None
                 for s in subjects:
                     for r in rooms:
-                        if solver.Value(Timetable[c, s, r, d, h]):
+                        if solver.Value(Timetable[c, s, d, h]):
                             subj = s
                 cell_text[row][ci+2] = subj if subj else ""
             row += 1
@@ -585,7 +546,7 @@ def show_timetable_table(Timetable, classes, subjects, rooms, days, lessons, sol
     plt.tight_layout()
     plt.show()
 
-def export_timetable_to_excel(filename, Timetable, classes, subjects, rooms, days, lessons, solver):
+def export_timetable_to_excel(filename, Timetable, classes, subjects, days, lessons, solver):
     # соответствие кодов дней к укр. сокращениям
     day_labels = {
         "Mo": "Пн",
@@ -612,9 +573,8 @@ def export_timetable_to_excel(filename, Timetable, classes, subjects, rooms, day
             for c in classes:
                 subj = None
                 for s in subjects:
-                    for r in rooms:
-                        if solver.Value(Timetable[c, s, r, d, h]):
-                            subj = translate_subject(s)
+                    if solver.Value(Timetable[c, s, d, h]):
+                        subj = translate_subject(s)
                 row.append(subj if subj else "")
             ws.append(row)
 
@@ -638,7 +598,7 @@ if status2 in (cp_model.OPTIMAL, cp_model.FEASIBLE):
     # show_timetable_table(Timetable, classes, subjects, rooms, days, lessons, solver2)
 
 # Экспорт в Excel
-    export_timetable_to_excel("timetable.xlsx", Timetable, classes, subjects, rooms, days, lessons, solver2)
+    export_timetable_to_excel("timetable.xlsx", Timetable, classes, subjects, days, lessons, solver2)
 
 else:
     print("❌ No feasible timetable")
