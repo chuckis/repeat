@@ -13,7 +13,7 @@ from subjects_translation import translate_subject, translate_subjects_list
 # DATA
 # ------------------------
 teachers = ['T1','T2','T3','T4','T5','T6','T7', 'T8', 'T9', 'T10', 'T11',
-            'T12','T13','T14', 'T15', 'T16', 'T17', 'T18', 'T19', 'T20', 'T21', 'T22']
+            'T12','T13','T14', 'T15', 'T16', 'T17', 'T18', 'T19', 'T20', 'T21', 'T22', 'T23']
 subjects = ['arithm', 'math', 'algebra', 'geometry', 'ukrmol', 'ukrmollit', 'ukrm', 'ukrlit','english', 'engmol','IT','biology',
             'history', 'ukrhistory','arts','music','crafts', 'craftsboys','sport',
             'physics','geo','pravozn', 'chem', 'prirod', 'ippoter', 'verhova', 'navch',
@@ -34,6 +34,7 @@ Curriculum[(1, 'prirod')] = 3
 Curriculum[(1, 'arts')] = 1
 Curriculum[(1, 'music')] = 1
 Curriculum[(1, 'crafts')] = 1
+Curriculum[(1, 'craftsboys')] = 1
 Curriculum[(1, 'sport')] = 2
 Curriculum[(1, 'OPK')] = 1
 Curriculum[(1, 'JS')] = 1
@@ -47,6 +48,7 @@ Curriculum[(2, 'arithm')] = 6
 Curriculum[(2, 'arts')] = 1
 Curriculum[(2, 'music')] = 1
 Curriculum[(2, 'crafts')] = 1
+Curriculum[(2, 'craftsboys')] = 1
 Curriculum[(2, 'sport')] = 2
 Curriculum[(2, 'navch')] = 4
 Curriculum[(2, 'IT')] = 1
@@ -63,6 +65,7 @@ Curriculum[(3, 'prirod')] = 3
 Curriculum[(3, 'arts')] = 1
 Curriculum[(3, 'music')] = 1
 Curriculum[(3, 'crafts')] = 1
+Curriculum[(3, 'craftsboys')] = 1
 Curriculum[(3, 'sport')] = 2
 Curriculum[(3, 'IT')] = 1
 Curriculum[(3, 'ippoter')] = 1
@@ -77,6 +80,7 @@ Curriculum[(4, 'arts')] = 1
 Curriculum[(4, 'prirod')] = 3
 Curriculum[(4, 'music')] = 1
 Curriculum[(4, 'crafts')] = 1
+Curriculum[(4, 'craftsboys')] = 1
 Curriculum[(4, 'sport')] = 2
 Curriculum[(4, 'IT')] = 1
 Curriculum[(4, 'ippoter')] = 1
@@ -94,6 +98,7 @@ Curriculum[(5, 'arts')] = 1
 Curriculum[(5, 'history')] = 1
 Curriculum[(5, 'music')] = 1
 Curriculum[(5, 'crafts')] = 1
+Curriculum[(5, 'craftsboys')] = 1
 Curriculum[(5, 'sport')] = 2
 Curriculum[(5, 'ippoter')] = 1
 Curriculum[(5, 'CSL')] = 1
@@ -111,6 +116,7 @@ Curriculum[(6, 'geo')] = 2
 Curriculum[(6, 'arts')] = 2
 Curriculum[(6, 'music')] = 1
 Curriculum[(6, 'crafts')] = 1
+Curriculum[(6, 'craftsboys')] = 1
 Curriculum[(6, 'sport')] = 2
 Curriculum[(6, 'ippoter')] = 1
 Curriculum[(6, 'JS')] = 1
@@ -120,7 +126,7 @@ Curriculum[(7, 'ukrm')] = 4
 Curriculum[(7, 'ukrlit')] = 3
 Curriculum[(7, 'english')] = 3
 Curriculum[(7, 'math')] = 4
-Curriculum[(7, 'IT')] = 1  # Убрано дублирование
+Curriculum[(7, 'IT')] = 1
 Curriculum[(7, 'biology')] = 2
 Curriculum[(7, 'physics')] = 2
 Curriculum[(7, 'history')] = 2 # merged with 8
@@ -128,6 +134,7 @@ Curriculum[(7, 'geo')] = 2
 Curriculum[(7, 'arts')] = 1
 Curriculum[(7, 'music')] = 1
 Curriculum[(7, 'crafts')] = 1
+Curriculum[(7, 'craftsboys')] = 1
 Curriculum[(7, 'chem')] = 2
 Curriculum[(7, 'sport')] = 2
 Curriculum[(7, 'JS')] = 1
@@ -145,6 +152,7 @@ Curriculum[(8, 'chem')] = 2
 Curriculum[(8, 'geo')] = 2
 Curriculum[(8, 'sport')] = 2
 Curriculum[(8, 'crafts')] = 1
+Curriculum[(8, 'craftsboys')] = 1
 Curriculum[(8, 'IT')] = 2
 Curriculum[(8, 'ippoter')] = 1
 Curriculum[(8, 'JS')] = 1
@@ -166,6 +174,7 @@ Curriculum[(9, 'IT')] = 2
 Curriculum[(9, 'ippoter')] = 1
 Curriculum[(9, 'OPK')] = 1
 Curriculum[(9, 'crafts')] = 1
+Curriculum[(9, 'craftsboys')] = 1
 
 
 # Approbation (кто какие предметы может вести) - ИСПРАВЛЕНО
@@ -216,13 +225,13 @@ Approbation = {
     ('T14', 'engmol'):1,
     ('T15', 'chem'):1,
     ('T16', 'crafts'):1,
-    ('T17', 'craftsboys'):1,  # ИСПРАВЛЕНО: было 'craftboys'
-    ('T18', 'JS'):1,  # ДОБАВЛЕНО: T18 отсутствовал
+    ('T17', 'craftsboys'):1,
+    ('T18', 'JS'):1,
     ('T19', 'physics'):1,
     ('T20', 'ukrm'):1,
-    ('T20', 'ukrlit'):1,
     ('T21', 'ippoter'):1,
     ('T22', 'geo'):1,
+    ('T23', 'ukrlit'):1,
 }
 
 
@@ -386,6 +395,20 @@ for c in classes:
         if hrs > 0:
             model2.Add(sum(Timetable[c, s, d, h] for d in days for h in lessons) == hrs)
 
+# Ограничение: уроки подряд (без дырок)
+for c in classes:
+    # граница по классам
+    if c <= 4:  
+        last_lesson = 5
+    else:
+        last_lesson = 7
+    
+    for d in days:
+        for h in range(1, last_lesson):
+            has_lesson_h   = sum(Timetable[c, s, d, h]   for s in subjects)
+            has_lesson_h1  = sum(Timetable[c, s, d, h+1] for s in subjects)
+            model2.Add(has_lesson_h >= has_lesson_h1)
+
 # Ограничение: в понедельник на первом уроке все классы имеют event
 event_subject = 'event'
 for c in classes:
@@ -420,7 +443,9 @@ for d, h in slots:
         for d2, h2 in slots:
             if (d2, h2) != (d, h):
                 model2.Add(Timetable[c, 'OPK', d2, h2] == 0).OnlyEnforceIf(bool_var)
-model2.Add(sum(opk_slot_bools) == 1)
+# мягкий вариант: разрешаем несколько дней, но минимизируем
+# (если хочешь жёстко один слот, оставь sum==1)
+model2.Add(sum(opk_slot_bools) >= 1)
 
 # Ограничение: crafts только на 2, 3, 6 или 7 уроке
 allowed_crafts_lessons = [2, 3, 6, 7]
@@ -465,7 +490,7 @@ for t in teachers:
                             normal_lessons.append(Timetable[c, s, d, h])
             model2.Add(sum(normal_lessons) <= 1)
 
-# Objective: минимизируем расхождения с Curriculum
+# Objective: минимизируем расхождения с Curriculum + минимизация числа дней для OPK (6–9)
 penalties = []
 for c in classes:
     for s in subjects:
@@ -477,6 +502,28 @@ for c in classes:
             model2.Add(diff == actual - hrs)
             model2.AddAbsEquality(abs_diff, diff)
             penalties.append(abs_diff)
+
+# 2) Мягкое ограничение для OPK (1-5 классы)
+for c in range(1, 6):
+    opk_day_bools = []
+    for d in days:
+        if d == 'Tu':  # вторник запрещён
+            for h in lessons:
+                model2.Add(Timetable[c, 'OPK', d, h] == 0)
+            continue
+
+        opk_day = model2.NewBoolVar(f"opk_day_{c}_{d}")
+        opk_day_bools.append(opk_day)
+        slot_sum = sum(Timetable[c, 'OPK', d, h] for h in lessons)
+        model2.Add(slot_sum >= 1).OnlyEnforceIf(opk_day)
+        model2.Add(slot_sum == 0).OnlyEnforceIf(opk_day.Not())
+
+    # ограничение: не более 2 дней с ОПК
+    model2.Add(sum(opk_day_bools) <= 2)
+
+    # добавляем в цель, чтобы минимизировать количество дней с ОПК
+    penalties.append(sum(opk_day_bools))
+
 model2.Minimize(sum(penalties))
 
 # Решение Phase 2
@@ -521,9 +568,8 @@ def show_timetable_table(Timetable, classes, subjects, days, lessons, solver):
             for ci, c in enumerate(classes):
                 subj = None
                 for s in subjects:
-                    for r in rooms:
-                        if solver.Value(Timetable[c, s, d, h]):
-                            subj = s
+                    if solver.Value(Timetable[c, s, d, h]):
+                        subj = translate_subject(s)
                 cell_text[row][ci+2] = subj if subj else ""
             row += 1
 
@@ -595,10 +641,10 @@ def export_timetable_to_excel(filename, Timetable, classes, subjects, days, less
 if status2 in (cp_model.OPTIMAL, cp_model.FEASIBLE):
     print("✅ Feasible timetable found")
    # Визуализация как таблица в matplotlib
-    # show_timetable_table(Timetable, classes, subjects, rooms, days, lessons, solver2)
+    show_timetable_table(Timetable, classes, subjects, days, lessons, solver2)
 
 # Экспорт в Excel
-    export_timetable_to_excel("timetable.xlsx", Timetable, classes, subjects, days, lessons, solver2)
+    # export_timetable_to_excel("timetable.xlsx", Timetable, classes, subjects, days, lessons, solver2)
 
 else:
     print("❌ No feasible timetable")
