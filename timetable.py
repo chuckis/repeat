@@ -7,15 +7,16 @@ from ortools.sat.python import cp_model
 import matplotlib.pyplot as plt
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, Border, Side
+from subjects_translation import translate_subject, translate_subjects_list
 
 # ------------------------
 # DATA
 # ------------------------
 teachers = ['T1','T2','T3','T4','T5','T6','T7', 'T8', 'T9', 'T10', 'T11',
             'T12','T13','T14', 'T15', 'T16', 'T17', 'T18', 'T19', 'T20', 'T21', 'T22']
-subjects = ['arithm', 'math', 'ukrmol', 'ukrm','english','IT','biology',
-            'history','arts','music','crafts','sport',
-            'physics','geo','pravozn', 'chem', 'prirod', 'ippoter', 'navch',
+subjects = ['arithm', 'math', 'algebra', 'geometry', 'ukrmol', 'ukrmollit', 'ukrm', 'ukrlit','english', 'engmol','IT','biology',
+            'history', 'ukrhistory','arts','music','crafts', 'craftsboys','sport',
+            'physics','geo','pravozn', 'chem', 'prirod', 'ippoter', 'verhova', 'navch',
             'CSL', 'OPK', 'JS', 'event']
 classes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 days = ['Mo', 'Tu', 'We', 'Th', 'Fr']
@@ -27,7 +28,7 @@ lessons = list(range(1, H+1))
 Curriculum = dict()
 
 Curriculum[(1, 'ukrmol')] = 6
-Curriculum[(1, 'english')] = 3
+Curriculum[(1, 'engmol')] = 3
 Curriculum[(1, 'arithm')] = 6
 Curriculum[(1, 'prirod')] = 3
 Curriculum[(1, 'arts')] = 1
@@ -41,7 +42,7 @@ Curriculum[(1, 'navch')] = 4
 # Curriculum[(1, 'CSL')] = 1
 
 Curriculum[(2, 'ukrmol')] = 7
-Curriculum[(2, 'english')] = 3
+Curriculum[(2, 'engmol')] = 3
 Curriculum[(2, 'arithm')] = 6
 Curriculum[(2, 'arts')] = 1
 Curriculum[(2, 'music')] = 1
@@ -56,7 +57,7 @@ Curriculum[(2, 'OPK')] = 1
 Curriculum[(2, 'JS')] = 1
 
 Curriculum[(3, 'ukrmol')] = 6
-Curriculum[(3, 'english')] = 3
+Curriculum[(3, 'engmol')] = 3
 Curriculum[(3, 'arithm')] = 6
 Curriculum[(3, 'prirod')] = 3
 Curriculum[(3, 'arts')] = 1
@@ -70,7 +71,7 @@ Curriculum[(3, 'OPK')] = 1
 Curriculum[(3, 'JS')] = 1
 
 Curriculum[(4, 'ukrmol')] = 7
-Curriculum[(4, 'english')] = 3
+Curriculum[(4, 'engmol')] = 3
 Curriculum[(4, 'arithm')] = 6
 Curriculum[(4, 'arts')] = 1
 Curriculum[(4, 'prirod')] = 3
@@ -83,7 +84,8 @@ Curriculum[(4, 'CSL')] = 1
 Curriculum[(4, 'OPK')] = 1
 Curriculum[(4, 'JS')] = 1
 
-Curriculum[(5, 'ukrm')] = 4 # TODO: ukrlit add
+Curriculum[(5, 'ukrm')] = 4
+Curriculum[(5, 'ukrlit')] = 3
 Curriculum[(5, 'english')] = 3
 Curriculum[(5, 'math')] = 5
 Curriculum[(5, 'IT')] = 1
@@ -99,6 +101,7 @@ Curriculum[(5, 'OPK')] = 1
 Curriculum[(5, 'JS')] = 1
 
 Curriculum[(6, 'ukrm')] = 4
+Curriculum[(6, 'ukrlit')] = 3
 Curriculum[(6, 'english')] = 3
 Curriculum[(6, 'math')] = 4
 Curriculum[(6, 'IT')] = 1
@@ -114,6 +117,7 @@ Curriculum[(6, 'JS')] = 1
 Curriculum[(6, 'OPK')] = 1
 
 Curriculum[(7, 'ukrm')] = 4
+Curriculum[(7, 'ukrlit')] = 3
 Curriculum[(7, 'english')] = 3
 Curriculum[(7, 'math')] = 4
 Curriculum[(7, 'IT')] = 1
@@ -132,6 +136,7 @@ Curriculum[(7, 'OPK')] = 1
 Curriculum[(7, 'ippoter')] = 1
 
 Curriculum[(8, 'ukrm')] = 4
+Curriculum[(8, 'ukrlit')] = 3
 Curriculum[(8, 'english')] = 3
 Curriculum[(8, 'math')] = 5
 Curriculum[(8, 'biology')] = 2
@@ -147,6 +152,7 @@ Curriculum[(8, 'JS')] = 1
 Curriculum[(8, 'OPK')] = 1
 
 Curriculum[(9, 'ukrm')] = 4
+Curriculum[(9, 'ukrlit')] = 3
 Curriculum[(9, 'english')] = 3
 Curriculum[(9, 'math')] = 4
 Curriculum[(9, 'biology')] = 2
@@ -174,6 +180,7 @@ Approbation = {
     ('T2','ukrmol'):1,
     ('T2','arithm'):1,
     ('T3', 'ukrm'):1,
+    ('T3', 'ukrlit'):1,
     ('T3','ukrmol'):1,
     ('T3','arithm'):1,
     ('T3','prirod'):1,
@@ -190,16 +197,18 @@ Approbation = {
     ('T8', 'event'):1,
     ('T9', 'sport'):1,
     ('T10', 'IT'):1,
-    ('T11', 'ippoter'):1,
+    ('T11', 'verhova'):1,
     ('T12', 'biology'):1,
     ('T13', 'history'):1,
     ('T14', 'english'):1,
+    ('T14', 'engmol'):1,
     ('T15', 'chem'):1,
     ('T16', 'crafts'):1,
-    ('T17', 'crafts'):1,
+    ('T17', 'craftboys'):1,
     # ('T18', 'JS'):1,
     ('T19', 'physics'):1,
     ('T20', 'ukrm'):1,
+    ('T20', 'ukrlit'):1,
     ('T21', 'ippoter'):1,
     ('T22', 'geo'):1,
 }
@@ -219,7 +228,7 @@ for t in teachers:
 Lessons = {t: model1.NewIntVar(0, 40, f"Lessons[{t}]") for t in teachers}
 
 # базовые предметы для 1-4 классов
-base_subjects = {"ukrmol", "arithm", "navch", "ukrm"}
+base_subjects = {"ukrmol", "arithm", "navch", "prirod", "crafts"}
 pairings = list(zip(teachers[:4], classes[:4]))  # (T1,1), (T2,2), (T3,3), (T4,4)
 
 for t, c in pairings:
@@ -258,7 +267,7 @@ for t in teachers:
         model1.Add(Lessons[t] == sum(total))
     else:
         model1.Add(Lessons[t] == 0)
-    model1.Add(Lessons[t] <= 30)
+    model1.Add(Lessons[t] <= 40)
 
 # каждая пара (class, subject) должна иметь ровно одного учителя
 for c in classes:
@@ -579,7 +588,7 @@ def export_timetable_to_excel(filename, Timetable, classes, subjects, rooms, day
                 for s in subjects:
                     for r in rooms:
                         if solver.Value(Timetable[c, s, r, d, h]):
-                            subj = s
+                            subj = translate_subject(s)
                 row.append(subj if subj else "")
             ws.append(row)
 
