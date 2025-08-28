@@ -13,14 +13,13 @@ from subjects_translation import translate_subject, translate_subjects_list
 # DATA
 # ------------------------
 teachers = ['T1','T2','T3','T4','T5','T6','T7', 'T8', 'T9', 'T10', 'T11',
-            'T12','T13','T14', 'T15', 'T17', 'T18', 'T19', 'T20', 'T21', 'T22', 'T23']
+            'T12','T13','T14', 'T15', 'T17', 'T18', 'T19', 'T20', 'T21', 'T22', 'T23', 'T24']
 subjects = ['arithm', 'math', 'algebra', 'geometry', 'ukrmol', 'ukrmollit', 'ukrm', 'ukrlit','english', 'engmol','IT','biology',
             'history', 'ukrhistory','arts','music','crafts', 'craftsboys','sport',
             'physics','geo','pravozn', 'chem', 'prirod', 'ippoter', 'verhova', 'navch',
             'CSL', 'OPK', 'JS', 'event']
 classes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 days = ['Mo', 'Tu', 'We', 'Th', 'Fr']
-# rooms = ['R1', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10', 'R12', 'R13', 'R14']
 H = 8
 lessons = list(range(1, H+1))
 
@@ -219,8 +218,10 @@ Approbation = {
     # Предметники
     ('T5', 'CSL'):1,
     ('T6', 'math'):1,
+    ('T6', 'algebra'):1,
+    ('T6', 'geometry'):1,
     ('T7', 'arts'):1,
-    ('T7', 'JS'):1,
+    # ('T7', 'JS'):1,
     ('T8', 'OPK'):1,
     ('T8', 'event'):1,
     ('T9', 'sport'):1,
@@ -228,7 +229,7 @@ Approbation = {
     ('T11', 'verhova'):1,
     ('T12', 'biology'):1,
     ('T13', 'history'):1,
-    ('T14', 'english'):1,
+    ('T24', 'english'):1,
     ('T14', 'engmol'):1,
     ('T15', 'chem'):1,
     # ('T16', 'crafts'):1,
@@ -256,7 +257,7 @@ for t in teachers:
 Lessons = {t: model1.NewIntVar(0, 40, f"Lessons[{t}]") for t in teachers}
 
 # ИСПРАВЛЕНО: базовые предметы для 1-4 классов
-base_subjects = {"ukrmol", "arithm", "navch", "prirod", "crafts"}
+base_subjects = {"ukrmol", "arithm", "navch", "prirod"} # !!!!!
 pairings = list(zip(teachers[:4], classes[:4]))  # (T1,1), (T2,2), (T3,3), (T4,4)
 
 # Закрепляем базовых учителей за своими классами
@@ -268,6 +269,7 @@ for t, c in pairings:
                 # закрепляем учителя за этим предметом в "своём" классе
                 model1.Add(Teaches[t, c, s] == 1)
                 # запрещаем другим учителям этот предмет в этом классе
+                # TODO: think about navch in 4th class
                 for other_t in teachers:
                     if other_t != t:
                         model1.Add(Teaches[other_t, c, s] == 0)
@@ -308,7 +310,7 @@ for c in classes:
             if s == 'event':
                 # event всегда ведёт T8
                 model1.Add(Teaches['T8', c, s] == 1)
-            elif c in (1, 2, 3, 4) and s in base_subjects:
+            elif c in [1, 2, 3, 4] and s in base_subjects:
                 # базовые предметы уже зафиксированы выше
                 pass
             else:
@@ -406,10 +408,9 @@ for c in classes:
 for c in classes:
     # граница по классам
     if c <= 4:  
-        last_lesson = 5
-    else:
         last_lesson = 7
-    
+    else:
+        last_lesson = 8
     for d in days:
         for h in range(1, last_lesson):
             has_lesson_h   = sum(Timetable[c, s, d, h]   for s in subjects)
@@ -417,15 +418,15 @@ for c in classes:
             model2.Add(has_lesson_h >= has_lesson_h1)
 
 # Ограничение: в понедельник на первом уроке все классы имеют event
-event_subject = 'event'
+# event_subject = 'event'
 for c in classes:
     # Обязательный урок в понедельник, 1-й урок
-    model2.Add(Timetable[c, event_subject, 'Mo', 1] == 1)
+    model2.Add(Timetable[c, 'event', 'Mo', 1] == 1)
     # Другие слоты в понедельник и в другие дни запрещаем для event
     for d in days:
         for h in lessons:
             if (d, h) != ('Mo', 1):
-                model2.Add(Timetable[c, event_subject, d, h] == 0)
+                model2.Add(Timetable[c, 'event', d, h] == 0)
 
 
 # Ограничение: OPK для классов 1-5 только в любые 2 дня, кроме вторника
@@ -501,8 +502,8 @@ for t in teachers:
                         if not (s == 'OPK' and 6 <= c <= 9) and not (c == 7 or c == 8):
                             normal_lessons.append(Timetable[c, s, d, h])
 
-            # теперь добавляем пересечение для 7 и 8 отдельно
-            # все остальные классы должны быть ≤1
+#             # теперь добавляем пересечение для 7 и 8 отдельно
+#             # все остальные классы должны быть ≤1
             model2.Add(sum(normal_lessons) <= 1)
 
 # Objective: минимизируем расхождения с Curriculum + минимизация числа дней для OPK (6–9)
@@ -519,25 +520,25 @@ for c in classes:
             penalties.append(abs_diff)
 
 # 2) Мягкое ограничение для OPK (1-5 классы)
-for c in range(1, 6):
-    opk_day_bools = []
-    for d in days:
-        if d == 'Tu':  # вторник запрещён
-            for h in lessons:
-                model2.Add(Timetable[c, 'OPK', d, h] == 0)
-            continue
+# for c in range(1, 6):
+#     opk_day_bools = []
+#     for d in days:
+#         if d == 'Tu':  # вторник запрещён
+#             for h in lessons:
+#                 model2.Add(Timetable[c, 'OPK', d, h] == 0)
+#             continue
 
-        opk_day = model2.NewBoolVar(f"opk_day_{c}_{d}")
-        opk_day_bools.append(opk_day)
-        slot_sum = sum(Timetable[c, 'OPK', d, h] for h in lessons)
-        model2.Add(slot_sum >= 1).OnlyEnforceIf(opk_day)
-        model2.Add(slot_sum == 0).OnlyEnforceIf(opk_day.Not())
+#         opk_day = model2.NewBoolVar(f"opk_day_{c}_{d}")
+#         opk_day_bools.append(opk_day)
+#         slot_sum = sum(Timetable[c, 'OPK', d, h] for h in lessons)
+#         model2.Add(slot_sum >= 1).OnlyEnforceIf(opk_day)
+#         model2.Add(slot_sum == 0).OnlyEnforceIf(opk_day.Not())
 
-    # ограничение: не более 2 дней с ОПК
-    model2.Add(sum(opk_day_bools) <= 2)
+#     # ограничение: не более 2 дней с ОПК
+#     model2.Add(sum(opk_day_bools) <= 2)
 
-    # добавляем в цель, чтобы минимизировать количество дней с ОПК
-    penalties.append(sum(opk_day_bools))
+#     # добавляем в цель, чтобы минимизировать количество дней с ОПК
+#     penalties.append(sum(opk_day_bools))
 
 model2.Minimize(sum(penalties))
 
