@@ -13,14 +13,14 @@ from subjects_translation import translate_subject, translate_subjects_list
 # DATA
 # ------------------------
 teachers = ['T1','T2','T3','T4','T5','T6','T7', 'T8', 'T9', 'T10', 'T11',
-            'T12','T13','T14', 'T15', 'T16', 'T17', 'T18', 'T19', 'T20', 'T21', 'T22', 'T23']
+            'T12','T13','T14', 'T15', 'T17', 'T18', 'T19', 'T20', 'T21', 'T22', 'T23']
 subjects = ['arithm', 'math', 'algebra', 'geometry', 'ukrmol', 'ukrmollit', 'ukrm', 'ukrlit','english', 'engmol','IT','biology',
             'history', 'ukrhistory','arts','music','crafts', 'craftsboys','sport',
             'physics','geo','pravozn', 'chem', 'prirod', 'ippoter', 'verhova', 'navch',
             'CSL', 'OPK', 'JS', 'event']
 classes = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 days = ['Mo', 'Tu', 'We', 'Th', 'Fr']
-rooms = ['R1', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10', 'R12', 'R13', 'R14']
+# rooms = ['R1', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9', 'R10', 'R12', 'R13', 'R14']
 H = 8
 lessons = list(range(1, H+1))
 
@@ -79,7 +79,7 @@ Curriculum[(4, 'arithm')] = 6
 Curriculum[(4, 'arts')] = 1
 Curriculum[(4, 'prirod')] = 3
 Curriculum[(4, 'music')] = 1
-Curriculum[(4, 'crafts')] = 1
+# Curriculum[(4, 'crafts')] = 1
 Curriculum[(4, 'craftsboys')] = 1
 Curriculum[(4, 'sport')] = 2
 Curriculum[(4, 'IT')] = 1
@@ -97,7 +97,7 @@ Curriculum[(5, 'prirod')] = 2
 Curriculum[(5, 'arts')] = 1
 Curriculum[(5, 'history')] = 1
 Curriculum[(5, 'music')] = 1
-Curriculum[(5, 'crafts')] = 1
+# Curriculum[(5, 'crafts')] = 1
 Curriculum[(5, 'craftsboys')] = 1
 Curriculum[(5, 'sport')] = 2
 Curriculum[(5, 'ippoter')] = 1
@@ -115,7 +115,7 @@ Curriculum[(6, 'history')] = 1
 Curriculum[(6, 'geo')] = 2
 Curriculum[(6, 'arts')] = 2
 Curriculum[(6, 'music')] = 1
-Curriculum[(6, 'crafts')] = 1
+# Curriculum[(6, 'crafts')] = 1
 Curriculum[(6, 'craftsboys')] = 1
 Curriculum[(6, 'sport')] = 2
 Curriculum[(6, 'ippoter')] = 1
@@ -133,7 +133,7 @@ Curriculum[(7, 'history')] = 2 # merged with 8
 Curriculum[(7, 'geo')] = 2
 Curriculum[(7, 'arts')] = 1
 Curriculum[(7, 'music')] = 1
-Curriculum[(7, 'crafts')] = 1
+# Curriculum[(7, 'crafts')] = 1
 Curriculum[(7, 'craftsboys')] = 1
 Curriculum[(7, 'chem')] = 2
 Curriculum[(7, 'sport')] = 2
@@ -151,7 +151,7 @@ Curriculum[(8, 'history')] = 2
 Curriculum[(8, 'chem')] = 2
 Curriculum[(8, 'geo')] = 2
 Curriculum[(8, 'sport')] = 2
-Curriculum[(8, 'crafts')] = 1
+# Curriculum[(8, 'crafts')] = 1
 Curriculum[(8, 'craftsboys')] = 1
 Curriculum[(8, 'IT')] = 2
 Curriculum[(8, 'ippoter')] = 1
@@ -173,7 +173,7 @@ Curriculum[(9, 'sport')] = 2
 Curriculum[(9, 'IT')] = 2
 Curriculum[(9, 'ippoter')] = 1
 Curriculum[(9, 'OPK')] = 1
-Curriculum[(9, 'crafts')] = 1
+# Curriculum[(9, 'crafts')] = 1
 Curriculum[(9, 'craftsboys')] = 1
 
 
@@ -224,7 +224,7 @@ Approbation = {
     ('T14', 'english'):1,
     ('T14', 'engmol'):1,
     ('T15', 'chem'):1,
-    ('T16', 'crafts'):1,
+    # ('T16', 'crafts'):1,
     ('T17', 'craftsboys'):1,
     ('T18', 'JS'):1,
     ('T19', 'physics'):1,
@@ -418,67 +418,67 @@ for c in classes:
             model2.Add(Timetable[c, s, 'Mo', 1] == 0)
 
 # Ограничение: OPK для классов 1-5 только в любые 2 дня, кроме вторника
-for c in range(1, 6):
-    opk_day_bools = []
-    for d in days:
-        if d == 'Tu':
-            for h in lessons:
-                model2.Add(Timetable[c, 'OPK', d, h] == 0)
-        else:
-            opk_day = model2.NewBoolVar(f"opk_day_{c}_{d}")
-            opk_day_bools.append(opk_day)
-            slot_sum = sum(Timetable[c, 'OPK', d, h] for h in lessons)
-            model2.Add(slot_sum >= 1).OnlyEnforceIf(opk_day)
-            model2.Add(slot_sum == 0).OnlyEnforceIf(opk_day.Not())
-    model2.Add(sum(opk_day_bools) == 2)
+# for c in range(1, 6):
+#     opk_day_bools = []
+#     for d in days:
+#         if d == 'Tu':
+#             for h in lessons:
+#                 model2.Add(Timetable[c, 'OPK', d, h] == 0)
+#         else:
+#             opk_day = model2.NewBoolVar(f"opk_day_{c}_{d}")
+#             opk_day_bools.append(opk_day)
+#             slot_sum = sum(Timetable[c, 'OPK', d, h] for h in lessons)
+#             model2.Add(slot_sum >= 1).OnlyEnforceIf(opk_day)
+#             model2.Add(slot_sum == 0).OnlyEnforceIf(opk_day.Not())
+#     model2.Add(sum(opk_day_bools) == 2)
 
 # Ограничение: у 6-9 классов OPK вместе (один слот для всех)
-slots = [(d, h) for d in days for h in lessons]
-opk_slot_bools = []
-for d, h in slots:
-    bool_var = model2.NewBoolVar(f"opk_slot_{d}_{h}")
-    opk_slot_bools.append(bool_var)
-    for c in range(6, 10):
-        model2.Add(Timetable[c, 'OPK', d, h] == 1).OnlyEnforceIf(bool_var)
-        for d2, h2 in slots:
-            if (d2, h2) != (d, h):
-                model2.Add(Timetable[c, 'OPK', d2, h2] == 0).OnlyEnforceIf(bool_var)
-# мягкий вариант: разрешаем несколько дней, но минимизируем
-# (если хочешь жёстко один слот, оставь sum==1)
-model2.Add(sum(opk_slot_bools) >= 1)
+# slots = [(d, h) for d in days for h in lessons]
+# opk_slot_bools = []
+# for d, h in slots:
+#     bool_var = model2.NewBoolVar(f"opk_slot_{d}_{h}")
+#     opk_slot_bools.append(bool_var)
+#     for c in range(6, 10):
+#         model2.Add(Timetable[c, 'OPK', d, h] == 1).OnlyEnforceIf(bool_var)
+#         for d2, h2 in slots:
+#             if (d2, h2) != (d, h):
+#                 model2.Add(Timetable[c, 'OPK', d2, h2] == 0).OnlyEnforceIf(bool_var)
+# # мягкий вариант: разрешаем несколько дней, но минимизируем
+# # (если хочешь жёстко один слот, оставь sum==1)
+# model2.Add(sum(opk_slot_bools) >= 1)
 
 # Ограничение: crafts только на 2, 3, 6 или 7 уроке
-allowed_crafts_lessons = [2, 3, 6, 7]
-for c in classes:
-    for d in days:
-        for h in lessons:
-            if h not in allowed_crafts_lessons:
-                model2.Add(Timetable[c, 'crafts', d, h] == 0)
+# allowed_crafts_lessons = [2, 3, 6, 7]
+# for c in classes:
+#     for d in days:
+#         for h in lessons:
+#             if h not in allowed_crafts_lessons:
+#                 model2.Add(Timetable[c, 'crafts', d, h] == 0)
 
 # Ограничение: sport только во вторник, четверг и пятницу
-allowed_sport_days = ['Tu', 'Th', 'Fr']
-for c in classes:
-    for d in days:
-        if d not in allowed_sport_days:
-            for h in lessons:
-                model2.Add(Timetable[c, 'sport', d, h] == 0)
+# allowed_sport_days = ['Tu', 'Th', 'Fr']
+# for c in classes:
+#     for d in days:
+#         if d not in allowed_sport_days:
+#             for h in lessons:
+#                 model2.Add(Timetable[c, 'sport', d, h] == 0)
 
 # Ограничение: biology только в понедельник и пятницу
-allowed_bio_days = ['Mo', 'Fr']
-for c in classes:
-    for d in days:
-        if d not in allowed_bio_days:
-            for h in lessons:
-                model2.Add(Timetable[c, 'biology', d, h] == 0)
+# allowed_bio_days = ['Mo', 'Fr']
+# for c in classes:
+#     for d in days:
+#         if d not in allowed_bio_days:
+#             for h in lessons:
+#                 model2.Add(Timetable[c, 'biology', d, h] == 0)
 
 # Ограничение: ippoter в 5-9 классах только в среду
-for c in range(5, 10):
-    for d in days:
-        if d != 'We':
-            for h in lessons:
-                model2.Add(Timetable[c, 'ippoter', d, h] == 0)
+# for c in range(6, 10):
+#     for d in days:
+#         if d != 'We':
+#             for h in lessons:
+#                 model2.Add(Timetable[c, 'ippoter', d, h] == 0)
 
-# Ограничение: один учитель ≤ 1 урок в слот (кроме совместных OPK)
+# Ограничение: один учитель ≤ 1 урок в слот (кроме совместных OPK и 7+8 вместе)
 for t in teachers:
     for d in days:
         for h in lessons:
@@ -486,8 +486,12 @@ for t in teachers:
             for c in classes:
                 for s in subjects:
                     if teacher_of.get((c, s)) == t:
-                        if not (s == 'OPK' and 6 <= c <= 9):
+                        # исключаем совместные OPK (6-9) и пару 7+8
+                        if not (s == 'OPK' and 6 <= c <= 9) and not (c == 7 or c == 8):
                             normal_lessons.append(Timetable[c, s, d, h])
+
+            # теперь добавляем пересечение для 7 и 8 отдельно
+            # все остальные классы должны быть ≤1
             model2.Add(sum(normal_lessons) <= 1)
 
 # Objective: минимизируем расхождения с Curriculum + минимизация числа дней для OPK (6–9)
