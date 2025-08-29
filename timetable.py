@@ -97,7 +97,7 @@ Curriculum[(5, 'ukrlit')] = 3
 Curriculum[(5, 'english')] = 3
 Curriculum[(5, 'math')] = 5
 Curriculum[(5, 'IT')] = 1
-Curriculum[(5, 'prirod')] = 2
+Curriculum[(5, 'geo')] = 2 #TODO: maybe it should be 'prirod'?
 Curriculum[(5, 'arts')] = 1
 Curriculum[(5, 'history')] = 1
 Curriculum[(5, 'music')] = 1
@@ -540,12 +540,12 @@ for c in classes:
 #     # добавляем в цель, чтобы минимизировать количество дней с ОПК
 #     penalties.append(sum(opk_day_bools))
 
-model2.Minimize(sum(penalties))
+model2.Minimize(sum(penalties)) # + sum(opk_day_bools))
 
 # Решение Phase 2
 solver2 = cp_model.CpSolver()
 solver2.parameters.max_time_in_seconds = 180
-status2 = solver2.Solve(model2)
+status2 = solver2.Solve(model2) # TODO: change to SolveWithSolutionCallback for intermediate results
 
 # ------------------------
 # VISUALIZATION
