@@ -25,10 +25,10 @@ cube.keyframe_insert(data_path="location", frame=frame_start)
 cube.location = (0, cube_travel_distance, 0)
 cube.keyframe_insert(data_path="location", frame=frame_end)
 
-# Анимация вращения куба
+# Анимация вращения куба (вращение вокруг оси Y - оси движения)
 cube.rotation_euler = (0, 0, 0)
 cube.keyframe_insert(data_path="rotation_euler", frame=frame_start)
-cube.rotation_euler = (0, 0, math.radians(cube_rotations * 360))
+cube.rotation_euler = (0, math.radians(cube_rotations * 360), 0)
 cube.keyframe_insert(data_path="rotation_euler", frame=frame_end)
 
 # Материал для куба (синий с излучением)
@@ -81,7 +81,7 @@ mat_spiral.node_tree.links.new(node_emission_spiral.outputs[0], node_output_spir
 curve_data.materials.append(mat_spiral)
 
 # ==================== СОЗДАНИЕ ШАРА ====================
-bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5, location=(0, 0, 0))
+bpy.ops.mesh.primitive_uv_sphere_add(radius=0.5, location=(spiral_radius, 0, 0))
 sphere = bpy.context.active_object
 sphere.name = "Sphere"
 
@@ -104,7 +104,15 @@ constraint.use_fixed_location = False
 constraint.forward_axis = 'FORWARD_Y'
 constraint.up_axis = 'UP_Z'
 
-# Анимация движения шара по траектории
+# ВАЖНО: Анимируем offset через данные кривой, а не через constraint
+curve_data.path_duration = frame_end - frame_start
+curve_data.use_path = True
+curve_data.eval_time = 0
+curve_data.keyframe_insert(data_path="eval_time", frame=frame_start)
+curve_data.eval_time = 100
+curve_data.keyframe_insert(data_path="eval_time", frame=frame_end)
+
+# Дополнительно анимируем через constraint для надёжности
 constraint.offset_factor = 0.0
 constraint.keyframe_insert(data_path="offset_factor", frame=frame_start)
 constraint.offset_factor = 1.0
