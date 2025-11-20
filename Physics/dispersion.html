@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Three.js — Дисперсия через треугольную призму</title>
+  <style>
+    html,body{height:100%;margin:0}
+    canvas{display:block}
+    #info{position:absolute;left:12px;top:12px;background:rgba(255,255,255,0.95);padding:10px;border-radius:6px;font-family:Arial,Helvetica,sans-serif;z-index:2}
+  </style>
+</head>
+<body>
+<div id="info">
+  <b>Дисперсия луча через треугольную призму (three.js)</b><br>
+  Источник лучей слева — белый свет разбивается на RGB. Используйте колесо мыши и левый клик для навигации.
+</div>
+
+<!--
+  Решение проблемы с «Failed to resolve module specifier "three"»:
+  многие jsm-модули (examples/jsm) внутри себя импортируют 'three' как bare specifier.
+  Браузер не знает как разрешить 'three' без import map. Поэтому добавляем importmap,
+  который указывает, что 'three' нужно брать с CDN (three.module.js).
+-->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.154.0/build/three.module.js"
+  }
+}
+</script>
+
+<script type="module">
+// теперь можно импортировать 'three' как bare specifier, и examples/jsm модули также будут работать
+import * as THREE from 'three';
+import { OrbitControls } from 'https://unpkg.com/three@0.154.0/examples/jsm/controls/OrbitControls.js';
+
+// ---- Настройки сцены ----
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf0f6ff);
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0, 1.5, 6);
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0,0.5,0);
+controls.update();
+
+// ---- Свет ----
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(5, 10, 7);
+scene.add(dirLight);
+const amb = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(amb);
+
+// ---- Призма (правильная треугольная призма вдоль Z) ----
+const prismHeight = 1.4; // высота треугольника
+const prismDepth = 1.8;  // длина призмы вдоль Z
+// Вершины треугольника (в плоскости X-Y)
+const a = new THREE.Vector3(-1.0, -0.4, -prismDepth/2);
+const b = new THREE.Vector3(1.0, -0.4, -prismDepth/2);
+const c = new THREE.Vector3(0.0, prismHeight-0.4, -prismDepth/2);
+const a2 = a.clone(); a2.z = prismDepth/2;
+const b2 = b.clone(); b2.z = prismDepth/2;
+const c2 = c.clone(); c2.z = prismDepth/2;
+
+// Создадим геометрию вручную: 6 треугольников (3 боковых, 2 основания)
+const geom = new THREE.BufferGeometry();
+const positions = [];
+function pushTri(p1,p2,p3){ positions.push(p1.x,p1.y,p1.z, p2.x,p2.y,p2.z, p3.x,p3.y,p3.z); }
+// передняя (z = -d/2)
+pushTri(a,b,c);
+// задняя
+pushTri(c2,b2,a2);
+// боковые грани (a-a2-b2-b), (b-b2-c2-c), (c-c2-a2-a)
+pushTri(a,a2,b2); pushTri(a,a2,b2,b);
+pushTri(b,b2,c2); pushTri(b,b2,c2,c);
+pushTri(c,c2,a2); pushTri(c,c2,a2,a);
+
+geom.setAttribute('position', new THREE.Float32BufferAttribute(positions,3));
+geom.computeVertexNormals();
+
+const prismMat = new THREE.MeshPhysicalMaterial({
+  color:0xffffff,
+  metalness:0,
+  roughness:0.05,
+  transmission:0.9,
+  transparent:true,
+  opacity:1.0,
+  ior:1.52,
+  side: THREE.DoubleSide,
+});
+const prism = new THREE.Mesh(geom, prismMat);
+scene.add(prism);
+
+// Отобразим контур призмы
+const edges = new THREE.EdgesGeometry(geom);
+const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({color:0x333333}));
+scene.add(line);
+
+// ---- Функции для трассировки лучей ----
+// Moller-Trumbore для пересечения луча и треугольника
+function intersectTriangle(orig, dir, v0, v1, v2){
+  const EPS = 1e-6;
+  const edge1 = new THREE.Vector3().subVectors(v1, v0);
+  const edge2 = new THREE.Vector3().subVectors(v2, v0);
+  const pvec = new THREE.Vector3().crossVectors(dir, edge2);
+  const det = edge1.dot(pvec);
+  if(Math.abs(det) < EPS) return null;
+  const invDet = 1/det;
+  const tvec = new THREE.Vector3().subVectors(orig, v0);
+  const u = tvec.dot(pvec) * invDet;
+  if(u < 0 || u > 1) return null;
+  const qvec = new THREE.Vector3().crossVectors(tvec, edge1);
+  const v = dir.dot(qvec) * invDet;
+  if(v < 0 || u + v > 1) return null;
+  const t = edge2.dot(qvec) * invDet;
+  if(t < EPS) return null;
+  const point = new THREE.Vector3().copy(dir).multiplyScalar(t).add(orig);
+  // нормаль
+  const normal = new THREE.Vector3().crossVectors(edge1, edge2).normalize();
+  // убедимся, что нормаль направлена против луча
+  if(normal.dot(dir) > 0) normal.negate();
+  return {point, normal, distance:t};
+}
+
+// Снижение дублирования: получаем все треугольники призмы в локальных координатах
+const triList = [];
+const pos = geom.attributes.position.array;
+for(let i=0;i<pos.length;i+=9){
+  const v0 = new THREE.Vector3(pos[i],pos[i+1],pos[i+2]);
+  const v1 = new THREE.Vector3(pos[i+3],pos[i+4],pos[i+5]);
+  const v2 = new THREE.Vector3(pos[i+6],pos[i+7],pos[i+8]);
+  triList.push([v0.clone(), v1.clone(), v2.clone()]);
+}
+
+// Реализация преломления по Снеллю (возвращает null при полном внутреннем отражении)
+function refract(I, N, n1, n2){
+  const eta = n1 / n2;
+  const cosi = -Math.max(-1, Math.min(1, I.dot(N)));
+  const k = 1 - eta * eta * (1 - cosi * cosi);
+  if(k < 0) return null; // TIR
+  const refr = new THREE.Vector3()
+    .copy(I).multiplyScalar(eta)
+    .add(N.clone().multiplyScalar(eta * cosi - Math.sqrt(k)));
+  refr.normalize();
+  return refr;
+}
+
+// Простая модель дисперсии через зависимость показателя преломления от длины волны (Cauchy)
+function refractiveIndexByWavelength(lambda_um){
+  // lambda_um — длина волны в микронах (0.45..0.65)
+  // Параметры выбраны эмпирически для видимого эффекта
+  const A = 1.514; // базовое n
+  const B = 0.0045; // коэффициент дисперсии
+  return A + B / (lambda_um*lambda_um);
+}
+
+// Отрисовка луча (линия по сегментам)
+function drawRay(points, colorHex=0xff0000){
+  const pts = new Float32Array(points.length*3);
+  for(let i=0;i<points.length;i++){ pts[i*3]=points[i].x; pts[i*3+1]=points[i].y; pts[i*3+2]=points[i].z; }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pts,3));
+  const mat = new THREE.LineBasicMaterial({color:colorHex});
+  const line = new THREE.Line(g, mat);
+  scene.add(line);
+  return line;
+}
+
+// ---- Трассировка набора лучей для белого света ----
+const raysGroup = new THREE.Group();
+scene.add(raysGroup);
+
+function clearRays(){
+  while(raysGroup.children.length) raysGroup.remove(raysGroup.children[0]);
+}
+
+function traceBeam(){
+  clearRays();
+  // параметры исходного луча
+  const sourceOrigin = new THREE.Vector3(-4, 0.4, 0);
+  const spread = 0.02; // тонкий пучок
+  const raysCount = 5; // сколько параллельных лучей по вертикали
+  const wavelengths = [0.65, 0.55, 0.45]; // красный, зелёный, синий (микроны)
+  const colors = [0xff3300, 0x22cc22, 0x3366ff];
+
+  for(let r=0;r<raysCount;r++){
+    const yOff = (r - (raysCount-1)/2) * spread;
+    // Луч теперь идёт под небольшим вертикальным углом, чтобы при выходе образовывался видимый вертикальный веер
+  const baseDir = new THREE.Vector3(1, 0.12, 0).normalize();
+    for(let w=0;w<wavelengths.length;w++){
+      const lambda = wavelengths[w];
+      const n_glass = refractiveIndexByWavelength(lambda);
+      const segments = [];
+      // 1) от источника до пересечения с призмой
+      const origin = sourceOrigin.clone().add(new THREE.Vector3(0, yOff, 0));
+      let dir = baseDir.clone();
+      segments.push(origin.clone());
+
+      // ищем ближайшее пересечение с любым треугольником
+      let hit = null; let hitTri=null; let minDist=1e9;
+      for(const tri of triList){
+        const h = intersectTriangle(origin, dir, tri[0], tri[1], tri[2]);
+        if(h && h.distance < minDist){ minDist = h.distance; hit = h; hitTri = tri; }
+      }
+      if(!hit){
+        // не попали — рисуем длинную линию
+        segments.push(origin.clone().add(dir.clone().multiplyScalar(8)));
+        drawRay(segments, colors[w]);
+        continue;
+      }
+      segments.push(hit.point.clone());
+
+      // 2) преломление при входе: из воздуха (n1=1) в стекло (n2=n_glass)
+      const n1 = 1.0, n2 = n_glass;
+      const refr1 = refract(dir, hit.normal, n1, n2);
+      if(refr1 === null){
+        // полный внутренний — отразился наружу (редко для входа), рисуем отражение
+        const refl = dir.clone().reflect(hit.normal).normalize();
+        segments.push(hit.point.clone().add(refl.clone().multiplyScalar(3)));
+        drawRay(segments, colors[w]);
+        continue;
+      }
+      // продвинемся немного внутрь, чтобы избежать повторного пересечения с той же поверхностью
+      let innerOrigin = hit.point.clone().add(refr1.clone().multiplyScalar(1e-5));
+      let innerDir = refr1.clone();
+
+      // 3) найти пересечение внутри призмы с другой стороной (или основанием)
+      let hit2=null; minDist=1e9; let hitTri2=null;
+      for(const tri of triList){
+        const h = intersectTriangle(innerOrigin, innerDir, tri[0], tri[1], tri[2]);
+        if(h && h.distance < minDist){ minDist = h.distance; hit2 = h; hitTri2 = tri; }
+      }
+      if(!hit2){
+        // выпадение внутрь — рисуем до границы сцены
+        segments.push(innerOrigin.clone().add(innerDir.clone().multiplyScalar(6)));
+        drawRay(segments, colors[w]);
+        continue;
+      }
+      segments.push(hit2.point.clone());
+
+      // 4) преломление при выходе из стекла обратно в воздух
+      const refr2 = refract(innerDir, hit2.normal, n2, n1);
+      if(refr2 === null){
+        // внутреннее отражение — отразился внутри, ограничимся несколькими отражениями
+        const refl = innerDir.clone().reflect(hit2.normal).normalize();
+        const bounceOrigin = hit2.point.clone().add(refl.clone().multiplyScalar(1e-5));
+        segments.push(bounceOrigin.clone());
+        // сделаем ещё одно пересечение для отражённого луча
+        let hit3=null; minDist=1e9;
+        for(const tri of triList){
+          const h = intersectTriangle(bounceOrigin, refl, tri[0], tri[1], tri[2]);
+          if(h && h.distance < minDist){ minDist = h.distance; hit3 = h; }
+        }
+        if(hit3) segments.push(hit3.point.clone());
+        drawRay(segments, colors[w]);
+        continue;
+      }
+      // выпущенный наружу луч
+      const outOrigin = hit2.point.clone().add(refr2.clone().multiplyScalar(1e-5));
+      const outDir = refr2.clone();
+      segments.push(outOrigin.clone().add(outDir.clone().multiplyScalar(8)));
+
+      drawRay(segments, colors[w]);
+    }
+  }
+}
+
+traceBeam();
+
+// ---- Визуальные подсказки: источник и оси ----
+const arrow = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(-4,0.4,0), 0.6, 0x000000, 0.12, 0.08);
+scene.add(arrow);
+
+const grid = new THREE.GridHelper(10,20,0xcccccc,0xeeeeee);
+scene.add(grid);
+
+// ---- Ресайз ----
+window.addEventListener('resize', ()=>{
+  camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ---- Анимация ----
+function animate(){ requestAnimationFrame(animate); renderer.render(scene, camera); }
+animate();
+
+</script>
+</body>
+</html>
