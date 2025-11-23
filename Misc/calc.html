@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор .ODS калькулятора</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .info-box {
+            background: #f7fafc;
+            border-left: 4px solid #4299e1;
+            padding: 16px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        .info-box h3 {
+            margin-top: 0;
+            color: #2d3748;
+            font-size: 16px;
+        }
+        .info-box ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .info-box li {
+            margin: 6px 0;
+            color: #4a5568;
+        }
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .icon {
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .note {
+            margin-top: 20px;
+            padding: 12px;
+            background: #fef5e7;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #7c6d2e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Калькулятор енергоспоживання 3D-принтера</h1>
+        <p class="subtitle">Генератор .ODS файлу з формулами</p>
+        
+        <div class="info-box">
+            <h3>Що буде в таблиці:</h3>
+            <ul>
+                <li><strong>Температури:</strong> навколишнього середовища, хотенда, столу</li>
+                <li><strong>Стіл (Bed):</strong> маса, теплоємність, енергія розігріву</li>
+                <li><strong>Хотенд:</strong> маса, теплоємність, енергія розігріву</li>
+                <li><strong>Пластик:</strong> маса, теплоємність, енергія нагріву</li>
+                <li><strong>Потужності:</strong> нагрівач столу, хотенд, duty cycle, мотори</li>
+                <li><strong>Час друку</strong> та <strong>ціна електроенергії</strong></li>
+                <li><strong>Автоматичні розрахунки:</strong> загальна енергія (Дж та кВт·год), вартість</li>
+            </ul>
+        </div>
+
+        <button onclick="generateODS()">
+            <span class="icon">⬇️</span>
+            Завантажити калькулятор (.ODS файл)
+        </button>
+
+        <div class="note">
+            <strong>💡 Інструкція:</strong> Відкрийте файл у LibreOffice Calc або Excel. Жовті комірки — для введення ваших даних. Зелені — автоматично розраховуються за формулами. Просто змінюйте значення і отримуйте результат!
+        </div>
+    </div>
+
+    <script>
+        function generateODS() {
+            var xml = '';
+            xml += '<?xml version="1.0" encoding="UTF-8"?>';
+            xml += '<office:document xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" ';
+            xml += 'xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" ';
+            xml += 'xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" ';
+            xml += 'xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0" ';
+            xml += 'xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0" ';
+            xml += 'office:version="1.2" office:mimetype="application/vnd.oasis.opendocument.spreadsheet">';
+            xml += '<office:automatic-styles>';
+            xml += '<style:style style:name="header" style:family="table-cell">';
+            xml += '<style:table-cell-properties fo:background-color="#4299e1"/>';
+            xml += '<style:text-properties fo:color="#ffffff" fo:font-weight="bold"/>';
+            xml += '</style:style>';
+            xml += '<style:style style:name="input" style:family="table-cell">';
+            xml += '<style:table-cell-properties fo:background-color="#fef5e7"/>';
+            xml += '</style:style>';
+            xml += '<style:style style:name="result" style:family="table-cell">';
+            xml += '<style:table-cell-properties fo:background-color="#d4edda"/>';
+            xml += '</style:style>';
+            xml += '</office:automatic-styles>';
+            xml += '<office:body><office:spreadsheet>';
+            xml += '<table:table table:name="Калькулятор">';
+            xml += '<table:table-column table:number-columns-repeated="4"/>';
+            
+            xml += '<table:table-row><table:table-cell table:style-name="header" table:number-columns-spanned="4" office:value-type="string">';
+            xml += '<text:p>КАЛЬКУЛЯТОР ЕНЕРГОСПОЖИВАННЯ 3D-ПРИНТЕРА</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell/></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>ТЕМПЕРАТУРИ</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Температура навколишнього середовища</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="20"><text:p>20</text:p></table:table-cell>';
+            xml += '<table:table-cell office:value-type="string"><text:p>°C</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Температура хотенда</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="190"><text:p>190</text:p></table:table-cell>';
+            xml += '<table:table-cell office:value-type="string"><text:p>°C</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Температура столу</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="60"><text:p>60</text:p></table:table-cell>';
+            xml += '<table:table-cell office:value-type="string"><text:p>°C</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell/></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>СТІЛ (BED)</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Маса столу (kg)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="0.7"><text:p>0.7</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Теплоємність столу (J/kg·K)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="900"><text:p>900</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Енергія розігріву столу (J)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="result" office:value-type="float" table:formula="of:=[.B10]*[.B11]*([.B6]-[.B4])"><text:p>25200</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell/></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>ХОТЕНД</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Маса хотенда (kg)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="0.05"><text:p>0.05</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Теплоємність хотенда (J/kg·K)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="385"><text:p>385</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Енергія розігріву хотенда (J)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="result" office:value-type="float" table:formula="of:=[.B16]*[.B17]*([.B5]-[.B4])"><text:p>3272.5</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell/></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>ПЛАСТИК</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Маса пластику (kg)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="0.05"><text:p>0.05</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Теплоємність пластику (J/kg·K)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="1800"><text:p>1800</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Енергія нагріву пластику (J)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="result" office:value-type="float" table:formula="of:=[.B22]*[.B23]*([.B5]-[.B4])"><text:p>15300</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell/></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>ПОТУЖНОСТІ</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Потужність столу (W)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="120"><text:p>120</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Duty cycle столу (0-1)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="0.5"><text:p>0.5</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Потужність хотенда (W)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="40"><text:p>40</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Duty cycle хотенда (0-1)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="0.6"><text:p>0.6</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Мотори + електроніка (W)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="30"><text:p>30</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Середня потужність (W)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="result" office:value-type="float" table:formula="of:=[.B28]*[.B29]+[.B30]*[.B31]+[.B32]"><text:p>114</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell/></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>ЧАС ДРУКУ</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Час друку (годин)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="2"><text:p>2</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Енергія підтримання (J)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="result" office:value-type="float" table:formula="of:=[.B33]*[.B37]*3600"><text:p>820800</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell/></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell table:style-name="header" table:number-columns-spanned="2" office:value-type="string"><text:p>РЕЗУЛЬТАТИ</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Загальна енергія розігріву (J)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="result" office:value-type="float" table:formula="of:=[.B12]+[.B18]+[.B24]"><text:p>43772.5</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Загальна енергія (J)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="result" office:value-type="float" table:formula="of:=[.B42]+[.B38]"><text:p>864572.5</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Загальна енергія (кВт·год)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="result" office:value-type="float" table:formula="of:=[.B43]/3600000"><text:p>0.2402</text:p></table:table-cell></table:table-row>';
+            xml += '<table:table-row><table:table-cell/></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>Ціна електроенергії (грн/кВт·год)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="input" office:value-type="float" office:value="4.32"><text:p>4.32</text:p></table:table-cell></table:table-row>';
+            
+            xml += '<table:table-row><table:table-cell office:value-type="string"><text:p>ВАРТІСТЬ ДРУКУ (грн)</text:p></table:table-cell>';
+            xml += '<table:table-cell table:style-name="result" office:value-type="float" table:formula="of:=[.B44]*[.B46]"><text:p>1.04</text:p></table:table-cell></table:table-row>';
+            
+            xml += '</table:table></office:spreadsheet></office:body></office:document>';
+
+            var blob = new Blob([xml], { type: 'application/vnd.oasis.opendocument.spreadsheet' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'kalkulyator_energospozhyvannya_3d_printer.ods';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
